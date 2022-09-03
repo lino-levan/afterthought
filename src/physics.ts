@@ -1,4 +1,3 @@
-
 export class Physics {
   RAPIER: any
   world: any
@@ -33,6 +32,24 @@ export class Physics {
     this.world.createCollider(colliderDesc, rigidBody);
 
     return rigidBody
+  }
+
+  castRay(positionVec, directionVec, maxDistance): number | null {
+    let ray = new this.RAPIER.Ray(positionVec, directionVec);
+    let hit = this.world.castRay(ray, maxDistance, true);
+
+    if(hit !== null) return hit.toi
+
+    return null
+  }
+
+  castCuboid(sizeVec, positionVec, rotationVec, velocityVec, maxDistance): number | null {
+    let shape = new this.RAPIER.Cuboid(sizeVec.x, sizeVec.y, sizeVec.z);
+
+    let hit = this.world.castShape(positionVec, rotationVec, velocityVec, shape, maxDistance);
+    if (hit != null) return hit.toi
+
+    return null
   }
 
   step() {

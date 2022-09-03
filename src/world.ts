@@ -37,7 +37,6 @@ export class World {
 
           let height = Math.round(this.noise2d((x + chunkX * 16)/100, (z + chunkZ * 16)/100) * 8) + 64
           height += Math.round(this.noise2d((x + chunkX * 16)/50, (z + chunkZ * 16)/50) * 4)
-          height += Math.round(this.noise2d((x + chunkX * 16)/25, (z + chunkZ * 16)/25) * 2)
 
           let tile = ''
 
@@ -237,7 +236,7 @@ export class World {
 
   private getBlockFromChunk(chunkName: string, x: number, y: number, z: number) {
     let chunk = chunkName.split("|").map((n)=>parseInt(n))
-    
+
     if(x === -1) {
       let chunkName = this.generateTerrain(chunk[0]-1, chunk[1], chunk[2])
       return this.getBlockFromChunk(chunkName, 15, y, z)

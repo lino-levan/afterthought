@@ -10,11 +10,13 @@ export class Player {
   keys: Record<string, boolean> = {}
   settings = {
     speed: 5,
-    jumpStength: 10
+    jumpStength: 8
   }
   physicsObject: RigidBody
+  physics: Physics
 
   constructor(renderer: THREE.WebGLRenderer, canvas: HTMLCanvasElement, physics: Physics) {
+    this.physics = physics
     this.renderer = renderer
     this.renderer.setClearColor(0xccfffc)
 
@@ -92,8 +94,13 @@ export class Player {
 
     const vel = this.physicsObject.linvel()
 
-    if(this.keys[' '] && vel.y<0.01 && vel.y>-0.01) {
-      velocity.y = this.settings.jumpStength
+    if(this.keys[' ']) {
+      let playerPos = this.physicsObject.translation()
+      playerPos.y -= 0.9 // move raycast to the player's feet
+      let dist = this.physics.castRay(playerPos, {x: 0, y: -1, z: 0}, 0.01)
+      if(dist != null) {
+        velocity.y = this.settings.jumpStength
+      }
     }
 
     if(this.keys['r']) {
@@ -105,7 +112,11 @@ export class Player {
       velocity.z *= 2
     }
 
-    this.physicsObject.setLinvel({x: velocity.x, y: Math.max(Math.min(vel.y + velocity.y, 20), -20), z: velocity.z}, true)
+    this.physicsObject.setLinvel({
+      x: velocity.x,
+      y: Math.max(Math.min(vel.y + velocity.y, 10), -20),
+      z: velocity.z
+    }, true)
 
     const pos = this.physicsObject.translation()
 

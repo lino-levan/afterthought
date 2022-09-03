@@ -6,7 +6,7 @@ import { Player } from "./player";
 import { World } from "./world";
 
 const canvas = document.querySelector('#c') as HTMLCanvasElement
-const renderer = new THREE.WebGLRenderer({canvas});
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true});
 const scene = new THREE.Scene()
 
 RAPIER.init().then(() => {
