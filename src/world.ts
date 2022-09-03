@@ -25,7 +25,7 @@ export class World {
 
     this.chunks[chunkName] = []
 
-    let biomes = ["ice", "grass", "sand"]
+    let biomes = ["snow", "grass", "sand"]
     const chunkBiome = biomes[Math.floor((this.noise2d(chunkX/20, chunkZ/20) + 1)/2 * biomes.length)]
 
     for(let x = 0; x<16; x++) {
@@ -55,15 +55,23 @@ export class World {
                 }
                 break;
 
-              case "ice":
+              case "snow":
                 if(y + chunkY * 16 < height) {
-                  tile = "ice"
+                  if(y + (chunkY * 16) + 4 >= height) {
+                    tile = 'snow'
+                  } else {
+                    tile = 'rock'
+                  }
                 }
                 break;
 
               case "sand":
                 if(y + chunkY * 16 < height) {
-                  tile = "sand"
+                  if(y + (chunkY * 16) + 4 >= height) {
+                    tile = 'sand'
+                  } else {
+                    tile = 'sandstone'
+                  }
                 }
                 break;
             }
@@ -113,7 +121,7 @@ export class World {
     const colliders: string[] = []
 
     // temporary variable to optimize chunk loading
-    const count: Record<string, number> = {}
+    const count: Record<string, number[][]> = {}
 
     // pass through the terrain and count the number of blocks of each type
     for(let x = 0; x < 16; x++) {
@@ -121,32 +129,6 @@ export class World {
         for(let z = 0; z < 16; z++) {
           const block = this.chunks[chunkName][x][y][z]
           if(!this.chunks[chunkName][x][y][z]) continue
-
-          if(count[block]) {
-            count[block]++
-          } else {
-            count[block] = 1
-          }
-        }
-      }
-    }
-
-    const geometry = new THREE.BoxGeometry(1, 1, 1)
-    // generate the instanced meshes
-    for(let [type, num] of Object.entries(count)) {
-      meshes[type] = new THREE.InstancedMesh(geometry, textures[type], num)
-
-      count[type] = 0 // reset count to use it later
-    }
-
-    // position the cubes of the instanced meshes correctly
-    const dummy = new THREE.Object3D()
-
-    for(let x = 0; x < 16; x++) {
-      for(let y = 0; y < 16; y++) {
-        for(let z = 0; z < 16; z++) {
-          const block = this.getBlockFromChunk(chunkName, x, y, z)
-          if(!block) continue
 
           let neighbors = [
             [1, 0, 0],
@@ -163,17 +145,31 @@ export class World {
 
           if(surroundedByBlocks) continue
 
-          dummy.position.set(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16)
-          colliders.push(this.physics.addBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16))
-          dummy.updateMatrix()
-          meshes[block].setMatrixAt(count[block], dummy.matrix)
-
           if(count[block]) {
-            count[block]++
+            count[block].push([x, y, z])
           } else {
-            count[block] = 1
+            count[block] = [[x, y, z]]
           }
         }
+      }
+    }
+
+    const geometry = new THREE.BoxGeometry(1, 1, 1)
+    // generate the instanced meshes
+    for(let [type, blocks] of Object.entries(count)) {
+      meshes[type] = new THREE.InstancedMesh(geometry, textures[type], blocks.length)
+    }
+
+    // position the cubes of the instanced meshes correctly
+    const dummy = new THREE.Object3D()
+
+    for(let [blockType, placements] of Object.entries(count)) {
+      for(let i = 0; i < placements.length; i++) {
+        let [x, y, z] = placements[i]
+        dummy.position.set(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16)
+        colliders.push(this.physics.addBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16))
+        dummy.updateMatrix()
+        meshes[blockType].setMatrixAt(i, dummy.matrix)
       }
     }
 

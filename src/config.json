@@ -34,6 +34,16 @@
       "textures": [
         "sand", "sand", "sand", "sand", "sand", "sand"
       ]
+    },
+    "sandstone": {
+      "textures": [
+        "sandstone", "sandstone", "sandstone", "sandstone", "sandstone", "sandstone"
+      ]
+    },
+    "snow": {
+      "textures": [
+        "snow", "snow", "snow", "snow", "snow", "snow"
+      ]
     }
   }
 }
