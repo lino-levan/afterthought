@@ -1,0 +1,24 @@
+{
+  "blocks": {
+    "dirt": {
+      "textures": [
+        "dirt", "dirt", "dirt", "dirt", "dirt", "dirt"
+      ]
+    },
+    "leaves": {
+      "textures": [
+        "leaves", "leaves", "leaves", "leaves", "leaves", "leaves"
+      ]
+    },
+    "rock": {
+      "textures": [
+        "rock", "rock", "rock", "rock", "rock", "rock"
+      ]
+    },
+    "grass": {
+      "textures": [
+        "grass_side", "grass_side", "grass_top", "dirt", "grass_side", "grass_side"
+      ]
+    }
+  }
+}
