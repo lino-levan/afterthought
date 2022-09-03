@@ -19,6 +19,21 @@
       "textures": [
         "grass_side", "grass_side", "grass_top", "dirt", "grass_side", "grass_side"
       ]
+    },
+    "wood": {
+      "textures": [
+        "wood_side", "wood_side", "wood_top", "wood_top", "wood_side", "wood_side"
+      ]
+    },
+    "ice": {
+      "textures": [
+        "ice", "ice", "ice", "ice", "ice", "ice"
+      ]
+    },
+    "sand": {
+      "textures": [
+        "sand", "sand", "sand", "sand", "sand", "sand"
+      ]
     }
   }
 }

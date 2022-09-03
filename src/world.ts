@@ -25,31 +25,76 @@ export class World {
 
     this.chunks[chunkName] = []
 
+    let biomes = ["ice", "grass", "sand"]
+    const chunkBiome = biomes[Math.floor((this.noise2d(chunkX/20, chunkZ/20) + 1)/2 * biomes.length)]
+
     for(let x = 0; x<16; x++) {
       this.chunks[chunkName].push([])
       for(let y = 0; y < 16; y++) {
         this.chunks[chunkName][x].push([])
         for(let z = 0; z < 16; z++) {
-          let density = this.noise3d((x + chunkX * 16)/100, (y + chunkY * 16)/100, (z + chunkZ * 16)/100)
+          let rockDensity = this.noise3d((x + chunkX * 16)/100, (y + chunkY * 16)/100, (z + chunkZ * 16)/100)
+
           let height = Math.round(this.noise2d((x + chunkX * 16)/100, (z + chunkZ * 16)/100) * 8) + 64
           height += Math.round(this.noise2d((x + chunkX * 16)/50, (z + chunkZ * 16)/50) * 4)
           height += Math.round(this.noise2d((x + chunkX * 16)/25, (z + chunkZ * 16)/25) * 2)
 
           let tile = ''
 
-          if(density < 0.5) {
-            if(y + chunkY * 16 < height) {
-              if(y + (chunkY * 16) + 1 >= height) {
-                tile = 'grass'
-              } else if(y + (chunkY * 16) + 4 >= height) {
-                tile = 'dirt'
-              } else {
-                tile = 'rock'
-              }
+          if(rockDensity < 0.7) {
+            switch (chunkBiome) {
+              case "grass":
+                if(y + chunkY * 16 < height) {
+                  if(y + (chunkY * 16) + 1 >= height) {
+                    tile = 'grass'
+                  } else if(y + (chunkY * 16) + 4 >= height) {
+                    tile = 'dirt'
+                  } else {
+                    tile = 'rock'
+                  }
+                }
+                break;
+
+              case "ice":
+                if(y + chunkY * 16 < height) {
+                  tile = "ice"
+                }
+                break;
+
+              case "sand":
+                if(y + chunkY * 16 < height) {
+                  tile = "sand"
+                }
+                break;
             }
           }
+          
 
           this.chunks[chunkName][x][y].push(tile)
+        }
+      }
+    }
+
+    // Vegetation Passs
+    for(let x = 0; x<16; x++) {
+      for(let y = 1; y < 16; y++) {
+        for(let z = 0; z < 16; z++) {
+          let block = this.getBlockFromChunk(chunkName,x,y-1,z)
+
+          let foliageNoise = this.noise2d((x + chunkX * 16)/2, (z + chunkZ * 16)/2)
+          if(block === "grass") {
+
+            if(foliageNoise < -0.9 && y < 12 && x > 2 && x < 14 && z > 2 && z < 14) {
+              this.chunks[chunkName][x][y][z] = "wood"
+              this.chunks[chunkName][x][y+1][z] = "wood"
+              this.chunks[chunkName][x][y+2][z] = "wood"
+              this.chunks[chunkName][x][y+3][z] = "leaves"
+              this.chunks[chunkName][x+1][y+2][z] = "leaves"
+              this.chunks[chunkName][x-1][y+2][z] = "leaves"
+              this.chunks[chunkName][x][y+2][z+1] = "leaves"
+              this.chunks[chunkName][x][y+2][z-1] = "leaves"
+            }
+          }
         }
       }
     }
