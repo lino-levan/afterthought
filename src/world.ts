@@ -7,7 +7,7 @@ import { Player } from "./player";
 export class World {
   // A world is made up of many 16x16x16 chunks
   private chunks: Record<string, string[][][]> = {}
-  private chunkMeshes: Record<string, Record<string, THREE.InstancedMesh>> = {}
+  private tempChunkData: Record<string, {meshes:Record<string, THREE.InstancedMesh>, colliders: string[]}> = {}
   private scene: THREE.Scene
   private physics: Physics
   private noise3d = createNoise3D()
@@ -108,7 +108,11 @@ export class World {
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`
     if(!this.chunks.hasOwnProperty(chunkName)) throw "Tried to build mesh before chunk was generated"
     
+    // variables used to keep track of data to cleanup later
     const meshes: Record<string, THREE.InstancedMesh> = {}
+    const colliders: string[] = []
+
+    // temporary variable to optimize chunk loading
     const count: Record<string, number> = {}
 
     // pass through the terrain and count the number of blocks of each type
@@ -160,7 +164,7 @@ export class World {
           if(surroundedByBlocks) continue
 
           dummy.position.set(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16)
-          this.physics.addBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16)
+          colliders.push(this.physics.addBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16))
           dummy.updateMatrix()
           meshes[block].setMatrixAt(count[block], dummy.matrix)
 
@@ -176,28 +180,26 @@ export class World {
     Object.values(meshes).forEach((mesh) => {
       this.scene.add(mesh)
     })
-    this.chunkMeshes[chunkName] = meshes
+    this.tempChunkData[chunkName] = {
+      meshes,
+      colliders
+    }
   }
 
   unloadChunk(chunkX, chunkY, chunkZ) {
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`
 
-    if(this.chunkMeshes[chunkName]) {
-      // Remove physics for blocks
-      for(let x = 0; x < 16; x++) {
-        for(let y = 0; y < 16; y++) {
-          for(let z = 0; z < 16; z++) {
-            this.physics.removeBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16)
-          }
-        }
-      }
+    if(this.tempChunkData[chunkName]) {
+      this.tempChunkData[chunkName].colliders.forEach((collider) => {
+        this.physics.removeBlock(collider)
+      })
 
       // Remove mesh from rendering
-      Object.values(this.chunkMeshes[chunkName]).forEach((mesh) => {
+      Object.values(this.tempChunkData[chunkName].meshes).forEach((mesh) => {
         mesh.removeFromParent()
       })
   
-      delete this.chunkMeshes[chunkName]
+      delete this.tempChunkData[chunkName]
     }
   }
 
@@ -210,7 +212,7 @@ export class World {
     ]
 
     // unload chunks too far away
-    Object.keys(this.chunkMeshes).forEach((chunkName)=>{
+    for (let chunkName of Object.keys(this.tempChunkData)) {
       let chunk = chunkName.split("|").map((n)=>parseInt(n))
       if(Math.abs(chunkPos[0]-chunk[0]) > 3) {
         this.unloadChunk(chunk[0], chunk[1], chunk[2])
@@ -221,7 +223,7 @@ export class World {
       if(Math.abs(chunkPos[2]-chunk[2]) > 3) {
         this.unloadChunk(chunk[0], chunk[1], chunk[2])
       }
-    })
+    }
 
     // load close chunks
     for(let x = -3; x < 3; x++) {
@@ -229,7 +231,7 @@ export class World {
         for(let z = -3; z < 3; z++) {
           let chunkName = this.generateTerrain(x + chunkPos[0], y + chunkPos[1], z + chunkPos[2])
 
-          if(this.chunkMeshes.hasOwnProperty(chunkName)) continue
+          if(this.tempChunkData.hasOwnProperty(chunkName)) continue
 
           this.buildMesh(x + chunkPos[0], y + chunkPos[1], z + chunkPos[2])
         }

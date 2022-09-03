@@ -11,14 +11,16 @@ export class Physics {
 
   addBlock(x, y, z) {
     const boxBody = this.RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5).setTranslation(x, y, z)
-    this.blocks[`${x}-${y}-${z}`] = this.world.createCollider(boxBody)
+    this.blocks[`${x}|${y}|${z}`] = this.world.createCollider(boxBody)
+
+    return `${x}|${y}|${z}`
   }
 
-  removeBlock(x, y, z) {
-    if(!this.blocks.hasOwnProperty(`${x}-${y}-${z}`)) return "Tried to remove a physics box that didn't exist"
+  removeBlock(blockName) {
+    if(!this.blocks.hasOwnProperty(blockName)) throw "Tried to remove a physics box that didn't exist"
 
-    this.world.removeCollider(this.blocks[`${x}-${y}-${z}`], false)
-    delete this.blocks[`${x}-${y}-${z}`]
+    this.world.removeCollider(this.blocks[blockName], false)
+    delete this.blocks[blockName]
   }
 
   addPhysicsObject(dx, dy, dz, x, y, z) {
