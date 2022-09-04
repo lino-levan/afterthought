@@ -95,12 +95,7 @@ export class Player {
     const vel = this.physicsObject.linvel()
 
     if(this.keys[' ']) {
-      let playerPos = this.physicsObject.translation()
-      playerPos.y -= 0.9 // move raycast to the player's feet
-      let dist = this.physics.castRay(playerPos, {x: 0, y: -1, z: 0}, 0.01)
-      if(dist != null) {
-        velocity.y = this.settings.jumpStength
-      }
+      velocity.y = this.settings.jumpStength
     }
 
     if(this.keys['r']) {

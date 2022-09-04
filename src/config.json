@@ -15,6 +15,11 @@
         "rock", "rock", "rock", "rock", "rock", "rock"
       ]
     },
+    "copium": {
+      "textures": [
+        "copium", "copium", "copium", "copium", "copium", "copium"
+      ]
+    },
     "grass": {
       "textures": [
         "grass_top", "dirt", "grass_side", "grass_side", "grass_side", "grass_side"
@@ -58,7 +63,8 @@
       "ice",
       "grass_top",
       "grass_side",
-      "dirt"
+      "dirt",
+      "copium"
     ]
   }
 }

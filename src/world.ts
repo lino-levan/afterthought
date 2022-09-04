@@ -34,14 +34,14 @@ export class World {
       for(let y = 0; y < 16; y++) {
         this.chunks[chunkName][x].push([])
         for(let z = 0; z < 16; z++) {
-          let rockDensity = this.noise3d((x + chunkX * 16)/100, (y + chunkY * 16)/100, (z + chunkZ * 16)/100)
+          let rockDensity = this.noise3d((x + chunkX * 16)/50, (y + chunkY * 16)/50, (z + chunkZ * 16)/50)
 
           let height = Math.round(this.noise2d((x + chunkX * 16)/100, (z + chunkZ * 16)/100) * 8) + 64
           height += Math.round(this.noise2d((x + chunkX * 16)/50, (z + chunkZ * 16)/50) * 4)
 
           let tile = ''
 
-          if(rockDensity < 0.7) {
+          if(rockDensity < 0.5) {
             switch (chunkBiome) {
               case "grass":
                 if(y + chunkY * 16 < height) {
@@ -56,11 +56,17 @@ export class World {
                 break;
 
               case "snow":
+                let copiumDensity = this.noise3d((x + chunkX * 16)/2, (y + chunkY * 16)/2, (z + chunkZ * 16)/2)
+
                 if(y + chunkY * 16 < height) {
                   if(y + (chunkY * 16) + 4 >= height) {
                     tile = 'snow'
                   } else {
-                    tile = 'rock'
+                    if(copiumDensity < -0.85) {
+                      tile = 'copium'
+                    } else {
+                      tile = 'rock'
+                    }
                   }
                 }
                 break;
