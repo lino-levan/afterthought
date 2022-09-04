@@ -129,7 +129,7 @@ export class World {
     let positions: number[] = [] // vertex buffer
     let uv: number[] = [] // uv buffer
 
-    const b = (1/textures["blocks"].textures.length) //
+    const b = (1/textures["blocks"].textures.length) // the size of each texture
     const e = 0 // error correction amount
 
     for(let x = 0; x<16; x++) {
