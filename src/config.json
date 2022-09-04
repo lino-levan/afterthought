@@ -17,12 +17,12 @@
     },
     "grass": {
       "textures": [
-        "grass_side", "grass_side", "grass_top", "dirt", "grass_side", "grass_side"
+        "grass_top", "dirt", "grass_side", "grass_side", "grass_side", "grass_side"
       ]
     },
     "wood": {
       "textures": [
-        "wood_side", "wood_side", "wood_top", "wood_top", "wood_side", "wood_side"
+        "wood_top", "wood_top", "wood_side", "wood_side", "wood_side", "wood_side"
       ]
     },
     "ice": {
@@ -45,5 +45,20 @@
         "snow", "snow", "snow", "snow", "snow", "snow"
       ]
     }
+  },
+  "textures": {
+    "blocks": [
+      "wood_top",
+      "wood_side",
+      "snow",
+      "sandstone",
+      "sand",
+      "rock",
+      "leaves",
+      "ice",
+      "grass_top",
+      "grass_side",
+      "dirt"
+    ]
   }
 }

@@ -3,11 +3,12 @@ import { createNoise3D, createNoise2D } from 'simplex-noise';
 import { textures } from "./blocks";
 import { Physics } from "./physics";
 import { Player } from "./player";
+import config from "./config.json";
 
 export class World {
   // A world is made up of many 16x16x16 chunks
   private chunks: Record<string, string[][][]> = {}
-  private tempChunkData: Record<string, {meshes:Record<string, THREE.InstancedMesh>, colliders: string[]}> = {}
+  private tempChunkData: Record<string, {mesh:THREE.Mesh | null, colliders: string[] | null}> = {}
   private scene: THREE.Scene
   private physics: Physics
   private noise3d = createNoise3D()
@@ -110,74 +111,202 @@ export class World {
   }
 
   buildMesh(chunkX, chunkY, chunkZ) {
-    this.unloadChunk(chunkX, chunkY, chunkZ)
+    // this.unloadChunk(chunkX, chunkY, chunkZ)
 
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`
     if(!this.chunks.hasOwnProperty(chunkName)) throw "Tried to build mesh before chunk was generated"
     
     // variables used to keep track of data to cleanup later
-    const meshes: Record<string, THREE.InstancedMesh> = {}
+    const geometry = new THREE.BufferGeometry();
     const colliders: string[] = []
 
-    // temporary variable to optimize chunk loading
-    const count: Record<string, number[][]> = {}
+    let positions: number[] = [] // vertex buffer
+    let uv: number[] = [] // uv buffer
 
-    // pass through the terrain and count the number of blocks of each type
-    for(let x = 0; x < 16; x++) {
+    const b = (1/textures["blocks"].textures.length) //
+    const e = 0 // error correction amount
+
+    for(let x = 0; x<16; x++) {
       for(let y = 0; y < 16; y++) {
         for(let z = 0; z < 16; z++) {
-          const block = this.chunks[chunkName][x][y][z]
-          if(!this.chunks[chunkName][x][y][z]) continue
+          let block = this.getBlockFromChunk(chunkName,x,y,z)
+          if(block === "") continue
 
-          let neighbors = [
-            [1, 0, 0],
-            [-1, 0, 0],
-            [0, 1, 0],
-            [0, -1, 0],
-            [0, 0, 1],
-            [0, 0, -1]
-          ]
+          let visible = false
 
-          const surroundedByBlocks = neighbors.reduce((prev, cur) => {
-            return prev && this.getBlockFromChunk(chunkName, x + cur[0], y + cur[1], z + cur[2]) !== ""
-          }, true)
+          // draw top face
+          if(this.getBlockFromChunk(chunkName,x,y+1,z) === "") {
+            const k = textures["blocks"].textures.findIndex((val)=>val===config.blocks[block].textures[0])
 
-          if(surroundedByBlocks) continue
+            positions.push(
+              x + 1, y+1, z,
+              x, y+1, z+1,
+              x+1, y+1, z+1,
+              x + 1, y+1, z,
+              x, y+1, z,
+              x, y+1, z+1,
+            )
+            uv.push(
+              1, (k+e)*b,
+              0, (k+1-e)*b,
+              1, (k+1-e)*b,
+              1, (k+e)*b,
+              0, (k+e)*b,
+              0, (k+1-e)*b,
+            )
 
-          if(count[block]) {
-            count[block].push([x, y, z])
-          } else {
-            count[block] = [[x, y, z]]
+            visible = true
+          }
+
+          // draw bottom face
+          if(this.getBlockFromChunk(chunkName,x,y-1,z) === "") {
+            const k = textures["blocks"].textures.findIndex((val)=>val===config.blocks[block].textures[1])
+
+            positions.push(
+              x, y, z+1,
+              x + 1, y, z,
+              x+1, y, z+1,
+              x + 1, y, z,
+              x, y, z+1,
+              x, y, z,
+            )
+            uv.push(
+              0, (k+1-e)*b,
+              1, (k+e)*b,
+              1, (k+1-e)*b,
+              1, (k+e)*b,
+              0, (k+1-e)*b,
+              0, (k+e)*b,
+            )
+
+            visible = true
+          }
+
+          // draw west face
+          if(this.getBlockFromChunk(chunkName,x-1,y,z) === "") {
+            const k = textures["blocks"].textures.findIndex((val)=>val===config.blocks[block].textures[2])
+
+            positions.push(
+              x,y,z+1,
+              x,y+1,z+1,
+              x,y,z,
+              x,y+1,z+1,
+              x,y+1,z,
+              x,y,z
+            )
+            uv.push(
+              0, (k+e)*b,
+              0, (k+1-e)*b,
+              1, (k+e)*b,
+              0, (k+1-e)*b,
+              1, (k+1-e)*b,
+              1, (k+e)*b,
+            )
+
+            visible = true
+          }
+
+          // draw east face
+          if(this.getBlockFromChunk(chunkName,x+1,y,z) === "") {
+            const k = textures["blocks"].textures.findIndex((val)=>val===config.blocks[block].textures[3])
+            
+            positions.push(
+              x+1,y,z+1,
+              x+1,y,z,
+              x+1,y+1,z+1,
+              x+1,y+1,z+1,
+              x+1,y,z,
+              x+1,y+1,z
+            )
+            uv.push(
+              0, (k+e)*b,
+              1, (k+e)*b,
+              0, (k+1-e)*b,
+              0, (k+1-e)*b,
+              1, (k+e)*b,
+              1, (k+1-e)*b,
+            )
+
+            visible = true
+          }
+
+          // draw north face
+          if(this.getBlockFromChunk(chunkName,x,y,z-1) === "") {
+            const k = textures["blocks"].textures.findIndex((val)=>val===config.blocks[block].textures[4])
+
+            positions.push(
+              x,y,z,
+              x,y+1,z,
+              x+1,y,z,
+              x+1,y,z,
+              x,y+1,z,
+              x+1,y+1,z,
+            )
+            uv.push(
+              0, (k+e)*b,
+              0, (k+1-e)*b,
+              1, (k+e)*b,
+              1, (k+e)*b,
+              0, (k+1-e)*b,
+              1, (k+1-e)*b,
+            )
+
+            visible = true
+          }
+
+          // draw south face
+          if(this.getBlockFromChunk(chunkName,x,y,z+1) === "") {
+            const k = textures["blocks"].textures.findIndex((val)=>val===config.blocks[block].textures[5])
+
+            positions.push(
+              x,y,z+1,
+              x+1,y,z+1,
+              x,y+1,z+1,
+              x+1,y,z+1,
+              x+1,y+1,z+1,
+              x,y+1,z+1
+            )
+            uv.push(
+              0, (k+e)*b,
+              1, (k+e)*b,
+              0, (k+1-e)*b,
+              1, (k+e)*b,
+              1, (k+1-e)*b,
+              0, (k+1-e)*b,
+            )
+
+            visible = true
+          }
+
+          if(visible) {
+            colliders.push(this.physics.addBlock(x + chunkX * 16, y + 1 + chunkY * 16, z + chunkZ * 16))
           }
         }
       }
     }
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1)
-    // generate the instanced meshes
-    for(let [type, blocks] of Object.entries(count)) {
-      meshes[type] = new THREE.InstancedMesh(geometry, textures[type], blocks.length)
-    }
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute( positions, 3 ) );
+    geometry.setAttribute('uv', new THREE.Float32BufferAttribute( uv, 2 ) );
+    geometry.computeVertexNormals();
 
-    // position the cubes of the instanced meshes correctly
-    const dummy = new THREE.Object3D()
+    if(positions.length > 0) {
+      const mesh = new THREE.Mesh( geometry, textures["blocks"].raw);
+      mesh.translateX(chunkX*16)
+      mesh.translateY(chunkY*16)
+      mesh.translateZ(chunkZ*16)
+      this.scene.add(mesh);
 
-    for(let [blockType, placements] of Object.entries(count)) {
-      for(let i = 0; i < placements.length; i++) {
-        let [x, y, z] = placements[i]
-        dummy.position.set(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16)
-        colliders.push(this.physics.addBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16))
-        dummy.updateMatrix()
-        meshes[blockType].setMatrixAt(i, dummy.matrix)
+      // const physicsMesh = this.physics.addMesh(chunkX*16, chunkY*16, chunkZ*16, Float32Array.from(positions), Uint32Array.from(triangles))
+
+      this.tempChunkData[chunkName] = {
+        mesh,
+        colliders
       }
-    }
-
-    Object.values(meshes).forEach((mesh) => {
-      this.scene.add(mesh)
-    })
-    this.tempChunkData[chunkName] = {
-      meshes,
-      colliders
+    } else {
+      this.tempChunkData[chunkName] = {
+        mesh: null,
+        colliders: null
+      }
     }
   }
 
@@ -185,15 +314,20 @@ export class World {
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`
 
     if(this.tempChunkData[chunkName]) {
-      this.tempChunkData[chunkName].colliders.forEach((collider) => {
-        this.physics.removeBlock(collider)
-      })
+      const mesh = this.tempChunkData[chunkName].mesh
+      if(mesh !== null) {
+        mesh.removeFromParent()
+      }
+
+      const colliders = this.tempChunkData[chunkName].colliders
+      if(colliders !== null) {
+        for(let collider of colliders) {
+          this.physics.removeBlock(collider)
+        }
+      }
 
       // Remove mesh from rendering
-      Object.values(this.tempChunkData[chunkName].meshes).forEach((mesh) => {
-        mesh.removeFromParent()
-      })
-  
+
       delete this.tempChunkData[chunkName]
     }
   }

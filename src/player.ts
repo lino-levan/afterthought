@@ -53,7 +53,7 @@ export class Player {
       e.preventDefault()
     })
 
-    this.physicsObject = physics.addPhysicsObject(0.3, 0.9, 0.3, 2, 128, 2)
+    this.physicsObject = physics.addPhysicsObject(0.3, 0.9, 0.3, 0, 70, 0)
   }
 
   update() {
