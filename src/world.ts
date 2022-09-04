@@ -279,7 +279,7 @@ export class World {
           }
 
           if(visible) {
-            colliders.push(this.physics.addBlock(x + chunkX * 16, y + 1 + chunkY * 16, z + chunkZ * 16))
+            colliders.push(this.physics.addBlock(x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16))
           }
         }
       }
@@ -291,9 +291,9 @@ export class World {
 
     if(positions.length > 0) {
       const mesh = new THREE.Mesh( geometry, textures["blocks"].raw);
-      mesh.translateX(chunkX*16)
-      mesh.translateY(chunkY*16)
-      mesh.translateZ(chunkZ*16)
+      mesh.translateX(chunkX*16 - 0.5)
+      mesh.translateY(chunkY*16 - 0.5)
+      mesh.translateZ(chunkZ*16 - 0.5)
       this.scene.add(mesh);
 
       // const physicsMesh = this.physics.addMesh(chunkX*16, chunkY*16, chunkZ*16, Float32Array.from(positions), Uint32Array.from(triangles))
