@@ -1,15 +1,16 @@
 import * as THREE from "three";
 import { createNoise3D, createNoise2D } from 'simplex-noise';
-import { textures } from "./blocks";
+import { textures } from "./textures";
 import { Physics } from "./physics";
 import { Player } from "./player";
 import config from "./config.json";
+import { mod } from "./constants";
 
 export class World {
   // A world is made up of many 16x16x16 chunks
   private chunks: Record<string, string[][][]> = {}
   private tempChunkData: Record<string, {mesh:THREE.Mesh | null, colliders: string[] | null}> = {}
-  private scene: THREE.Scene
+  scene: THREE.Scene
   private physics: Physics
   private noise3d = createNoise3D()
   private noise2d = createNoise2D()
@@ -117,7 +118,7 @@ export class World {
   }
 
   buildMesh(chunkX, chunkY, chunkZ) {
-    // this.unloadChunk(chunkX, chunkY, chunkZ)
+    this.unloadChunk(chunkX, chunkY, chunkZ)
 
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`
     if(!this.chunks.hasOwnProperty(chunkName)) throw "Tried to build mesh before chunk was generated"
@@ -297,9 +298,9 @@ export class World {
 
     if(positions.length > 0) {
       const mesh = new THREE.Mesh( geometry, textures["blocks"].raw);
-      mesh.translateX(chunkX*16 - 0.5)
-      mesh.translateY(chunkY*16 - 0.5)
-      mesh.translateZ(chunkZ*16 - 0.5)
+      mesh.translateX(chunkX*16)
+      mesh.translateY(chunkY*16)
+      mesh.translateZ(chunkZ*16)
       this.scene.add(mesh);
 
       // const physicsMesh = this.physics.addMesh(chunkX*16, chunkY*16, chunkZ*16, Float32Array.from(positions), Uint32Array.from(triangles))
@@ -401,6 +402,55 @@ export class World {
       let chunkName = this.generateTerrain(chunk[0], chunk[1], chunk[2]+1)
       return this.getBlockFromChunk(chunkName, x, y, 0)
     }
+
+    return this.chunks[chunkName][x][y][z]
+  }
+
+  removeBlock(globalX, globalY, globalZ) {
+    const chunkX = Math.floor(globalX/16)
+    const chunkY = Math.floor(globalY/16)
+    const chunkZ = Math.floor(globalZ/16)
+
+    const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ)
+    const x = mod(globalX, 16)
+    const y = mod(globalY, 16)
+    const z = mod(globalZ, 16)
+
+    this.chunks[chunkName][x][y][z] = ""
+
+    this.buildMesh(chunkX, chunkY, chunkZ)
+
+    // deal with chunk boundaries
+    if(x === 0) {
+      this.buildMesh(chunkX-1, chunkY, chunkZ)
+    }
+    if(x === 15) {
+      this.buildMesh(chunkX+1, chunkY, chunkZ)
+    }
+    if(y === 0) {
+      this.buildMesh(chunkX, chunkY-1, chunkZ)
+    }
+    if(y === 15) {
+      this.buildMesh(chunkX, chunkY+1, chunkZ)
+    }
+    if(z === 0) {
+      this.buildMesh(chunkX, chunkY, chunkZ-1)
+    }
+    if(z === 15) {
+      this.buildMesh(chunkX, chunkY, chunkZ+1)
+    }
+  }
+
+  getBlock(globalX, globalY, globalZ) {
+    const chunkX = Math.floor(globalX/16)
+    const chunkY = Math.floor(globalY/16)
+    const chunkZ = Math.floor(globalZ/16)
+
+    const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ)
+
+    const x = mod(globalX, 16)
+    const y = mod(globalY, 16)
+    const z = mod(globalZ, 16)
 
     return this.chunks[chunkName][x][y][z]
   }

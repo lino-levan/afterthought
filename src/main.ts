@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import RAPIER from '@dimforge/rapier3d-compat';
-import { loadTextures } from "./blocks";
+import { loadTextures } from "./textures";
 import { Physics } from "./physics";
 import { Player } from "./player";
 import { World } from "./world";
@@ -12,8 +12,8 @@ const scene = new THREE.Scene()
 RAPIER.init().then(() => {
   const physics = new Physics(RAPIER)
 
-  const player = new Player(renderer, canvas, physics)
   const world = new World(scene, physics)
+  const player = new Player(renderer, canvas, physics, world)
 
 
   loadTextures()

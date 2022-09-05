@@ -9,7 +9,7 @@ export class Physics {
   }
 
   addBlock(x, y, z) {
-    const boxBody = this.RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5).setTranslation(x, y, z)
+    const boxBody = this.RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5).setTranslation(x + 0.5, y + 0.5, z + 0.5)
     this.blocks[`${x}|${y}|${z}`] = this.world.createCollider(boxBody)
 
     return `${x}|${y}|${z}`
@@ -32,24 +32,6 @@ export class Physics {
     this.world.createCollider(colliderDesc, rigidBody);
 
     return rigidBody
-  }
-
-  castRay(positionVec, directionVec, maxDistance): number | null {
-    let ray = new this.RAPIER.Ray(positionVec, directionVec);
-    let hit = this.world.castRay(ray, maxDistance, true);
-
-    if(hit !== null) return hit.toi
-
-    return null
-  }
-
-  castCuboid(sizeVec, positionVec, rotationVec, velocityVec, maxDistance): number | null {
-    let shape = new this.RAPIER.Cuboid(sizeVec.x, sizeVec.y, sizeVec.z);
-
-    let hit = this.world.castShape(positionVec, rotationVec, velocityVec, shape, maxDistance);
-    if (hit != null) return hit.toi
-
-    return null
   }
 
   step() {

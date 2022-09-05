@@ -3,52 +3,62 @@
     "dirt": {
       "textures": [
         "dirt", "dirt", "dirt", "dirt", "dirt", "dirt"
-      ]
+      ],
+      "resistance": 50
     },
     "leaves": {
       "textures": [
         "leaves", "leaves", "leaves", "leaves", "leaves", "leaves"
-      ]
+      ],
+      "resistance": 10
     },
     "rock": {
       "textures": [
         "rock", "rock", "rock", "rock", "rock", "rock"
-      ]
+      ],
+      "resistance": 100
     },
     "copium": {
       "textures": [
         "copium", "copium", "copium", "copium", "copium", "copium"
-      ]
+      ],
+      "resistance": 150
     },
     "grass": {
       "textures": [
         "grass_top", "dirt", "grass_side", "grass_side", "grass_side", "grass_side"
-      ]
+      ],
+      "resistance": 50
     },
     "wood": {
       "textures": [
         "wood_top", "wood_top", "wood_side", "wood_side", "wood_side", "wood_side"
-      ]
+      ],
+      "resistance": 75
     },
     "ice": {
       "textures": [
         "ice", "ice", "ice", "ice", "ice", "ice"
-      ]
+      ],
+      "resistance": 50
     },
     "sand": {
       "textures": [
         "sand", "sand", "sand", "sand", "sand", "sand"
-      ]
+      ],
+      "resistance": 50
     },
     "sandstone": {
       "textures": [
         "sandstone", "sandstone", "sandstone", "sandstone", "sandstone", "sandstone"
-      ]
+      ],
+      "resistance": 75
     },
     "snow": {
       "textures": [
         "snow", "snow", "snow", "snow", "snow", "snow"
-      ]
+      ],
+      "resistance": 50
     }
   },
   "textures": {
@@ -65,6 +75,18 @@
       "grass_side",
       "dirt",
       "copium"
+    ],
+    "break": [
+      "9",
+      "8",
+      "7",
+      "6",
+      "5",
+      "4",
+      "3",
+      "2",
+      "1",
+      "0"
     ]
   }
 }
