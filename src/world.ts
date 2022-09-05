@@ -294,10 +294,21 @@ export class World {
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute( positions, 3 ) );
     geometry.setAttribute('uv', new THREE.Float32BufferAttribute( uv, 2 ) );
+    geometry.setAttribute('uv2', new THREE.Float32BufferAttribute( uv, 2 ) );
     geometry.computeVertexNormals();
 
+    // lighting texture (WIP)
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
+    canvas.width = 200;
+    canvas.height = 200;
+    ctx.fillStyle = "white"
+    ctx.fillRect(0, 0, 200, 200)
+    var texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
     if(positions.length > 0) {
-      const mesh = new THREE.Mesh( geometry, textures["blocks"].raw);
+      const mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial({map: textures["blocks"].raw, lightMap:texture}));
       mesh.translateX(chunkX*16)
       mesh.translateY(chunkY*16)
       mesh.translateZ(chunkZ*16)

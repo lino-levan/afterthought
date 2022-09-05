@@ -5,6 +5,7 @@ import { Physics } from "./physics";
 import { textures } from "./textures";
 import { World } from "./world";
 import config from "./config.json"
+import { MeshBasicMaterial } from "three";
 
 
 export class Player {
@@ -319,8 +320,9 @@ export class Player {
       geometry.setAttribute('position', new THREE.Float32BufferAttribute( positions, 3 ) );
       geometry.setAttribute('uv', new THREE.Float32BufferAttribute( uv, 2 ) );
       geometry.computeVertexNormals();
-      textures["break"].raw.transparent = true
-      const mesh = new THREE.Mesh( geometry, textures["break"].raw);
+      const material = new MeshBasicMaterial({map: textures["break"].raw})
+      material.transparent = true
+      const mesh = new THREE.Mesh( geometry, material);
       this.world.scene.add(mesh);
 
       this.break.blockShell = mesh
