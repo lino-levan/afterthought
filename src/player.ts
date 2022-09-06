@@ -1,12 +1,12 @@
 import { RigidBody } from "@dimforge/rapier3d-compat";
 import * as THREE from "three";
-import { UP_AXIS } from "./constants";
 import { Physics } from "./physics";
 import { textures } from "./textures";
 import { World } from "./world";
 import config from "./config.json"
 import { MeshBasicMaterial } from "three";
 
+const UP_AXIS = new THREE.Vector3(0, 1, 0)
 
 export class Player {
   renderer: THREE.WebGLRenderer
@@ -92,7 +92,7 @@ export class Player {
       e.preventDefault()
     })
 
-    this.physicsObject = physics.addPhysicsObject(0.3, 0.9, 0.3, 0, 70, 0)
+    this.physicsObject = physics.addPhysicsObject(0.3, 0.9, 0.3, 0, 10, 0)
   }
 
   update() {

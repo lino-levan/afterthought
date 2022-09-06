@@ -15,8 +15,10 @@ RAPIER.init().then(() => {
   const world = new World(scene, physics)
   const player = new Player(renderer, canvas, physics, world)
 
-
   loadTextures()
+  
+  world.update(player, true)
+
 
   function render(time) {
     canvas.width = window.innerWidth
@@ -29,8 +31,8 @@ RAPIER.init().then(() => {
     renderer.render(scene, player.camera);
 
     player.update()
-    world.update(player)
 
+    world.update(player)
     physics.step()
     
     requestAnimationFrame(render);
