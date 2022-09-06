@@ -13,7 +13,12 @@ export class Player {
   camera: THREE.PerspectiveCamera
   canvas: HTMLCanvasElement
   keys: Record<string, boolean> = {}
-  mouseDown: boolean = false
+  mouseDown: boolean[] = [
+    false,
+    false,
+    false,
+    false
+  ]
   settings = {
     speed: 5,
     jumpStength: 8,
@@ -31,6 +36,13 @@ export class Player {
     blockShell: null,
     destructionTimer: 0,
     lastBlock: {x: 0, y: 0, z: 0}
+  }
+  place: {
+    timer: number
+    selected: number
+  } = {
+    timer: 0,
+    selected: 0
   }
 
   constructor(renderer: THREE.WebGLRenderer, canvas: HTMLCanvasElement, physics: Physics, world: World) {
@@ -60,12 +72,12 @@ export class Player {
       this.camera.rotateX(e.movementY * -0.001)
     })
 
-    this.canvas.addEventListener('mousedown', () => {
-      this.mouseDown = true
+    this.canvas.addEventListener('mousedown', (e) => {
+      this.mouseDown[e.button]= true
     })
 
-    this.canvas.addEventListener('mouseup', () => {
-      this.mouseDown = false
+    this.canvas.addEventListener('mouseup', (e) => {
+      this.mouseDown[e.button]= false
     })
 
     this.canvas.addEventListener('keydown', (e) => {
@@ -133,6 +145,13 @@ export class Player {
       velocity.x *= 2
       velocity.z *= 2
     }
+
+    // handle keyboard top row
+    for(let i = 0; i < 10; i ++) {
+      if(this.keys[i.toString()]) {
+        this.place.selected = i
+      }
+    }
     
     // handle raycasting
     this.raycast()
@@ -160,6 +179,8 @@ export class Player {
       this.break.blockShell.removeFromParent()
       this.break.blockShell = null
     }
+
+    this.place.timer--
 
     const dist = 4
     const steps = 100
@@ -226,7 +247,7 @@ export class Player {
 
     this.break.blockOutline = line
 
-    if (this.mouseDown) {
+    if (this.mouseDown[0]) {
       this.break.destructionTimer++
 
       // draw destruction texture (even more ugly I know)
@@ -329,6 +350,42 @@ export class Player {
 
     } else {
       this.break.destructionTimer = 0
+    }
+
+
+    if(this.mouseDown[2] && this.place.timer < 0) {
+      pos.sub(step)
+
+      blockPos = {
+        x: Math.floor(pos.x),
+        y: Math.floor(pos.y),
+        z: Math.floor(pos.z)
+      }
+
+      let playerPos = this.physicsObject.translation()
+      const a = {
+        minX:playerPos.x - 0.3,
+        minY: playerPos.y - 0.9,
+        minZ: playerPos.z - 0.3,
+        maxX: playerPos.x + 0.3,
+        maxY: playerPos.y + 0.9,
+        maxZ:playerPos.z + 0.3
+      }
+
+      const b = {
+        minX: blockPos.x,
+        minY: blockPos.y,
+        minZ: blockPos.z,
+        maxX: blockPos.x + 1,
+        maxY: blockPos.y + 1,
+        maxZ: blockPos.z + 1
+      }
+
+      if(!(a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY && a.minZ <= b.maxZ && a.maxZ >= b.minZ)) {
+        this.world.setBlock(blockPos.x, blockPos.y, blockPos.z, Object.keys(config.blocks)[this.place.selected])
+
+        this.place.timer = 10
+      }
     }
 
     if(this.break.destructionTimer > config.blocks[blockType].resistance) {

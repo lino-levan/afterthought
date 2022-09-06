@@ -465,4 +465,19 @@ export class World {
 
     return this.chunks[chunkName][x][y][z]
   }
+
+  setBlock(globalX, globalY, globalZ, block) {
+    const chunkX = Math.floor(globalX/16)
+    const chunkY = Math.floor(globalY/16)
+    const chunkZ = Math.floor(globalZ/16)
+
+    const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ)
+
+    const x = mod(globalX, 16)
+    const y = mod(globalY, 16)
+    const z = mod(globalZ, 16)
+
+    this.chunks[chunkName][x][y][z] = block
+    this.buildMesh(chunkX, chunkY, chunkZ)
+  }
 }
