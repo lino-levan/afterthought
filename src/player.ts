@@ -22,6 +22,7 @@ export class Player {
   settings = {
     speed: 5,
     jumpStength: 8,
+    creative: false
   }
   physicsObject: RigidBody
   physics: Physics
@@ -155,13 +156,17 @@ export class Player {
         z: Math.floor(playerPos.z)
       }
 
-      if(this.world.getBlock(blockPos.x, blockPos.y, blockPos.z) !== "" && a.minX <= blockPos.x + 1 && a.maxX >= blockPos.x && a.minY <= blockPos.y + 1 && a.maxY >= blockPos.y && a.minZ <= blockPos.z + 1 && a.maxZ >= blockPos.z) {
+      if(this.settings.creative || this.world.getBlock(blockPos.x, blockPos.y, blockPos.z) !== "" && a.minX <= blockPos.x + 1 && a.maxX >= blockPos.x && a.minY <= blockPos.y + 1 && a.maxY >= blockPos.y && a.minZ <= blockPos.z + 1 && a.maxZ >= blockPos.z) {
         velocity.y = this.settings.jumpStength
       }
     }
 
     if(this.keys['r']) {
       location.reload()
+    }
+
+    if(this.keys['c']) {
+      this.settings.creative = true
     }
 
     if(this.keys['Shift']) {
