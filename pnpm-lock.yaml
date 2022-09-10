@@ -4,6 +4,7 @@ specifiers:
   '@dimforge/rapier3d': ^0.9.0
   '@dimforge/rapier3d-compat': ^0.9.0
   '@types/three': ^0.144.0
+  alea: ^1.0.1
   simplex-noise: ^4.0.0
   three: ^0.144.0
   vite: ^3.0.9
@@ -11,6 +12,7 @@ specifiers:
 dependencies:
   '@dimforge/rapier3d': 0.9.0
   '@dimforge/rapier3d-compat': 0.9.0
+  alea: 1.0.1
   simplex-noise: 4.0.0
   three: 0.144.0
 
@@ -46,6 +48,10 @@ packages:
   /@types/webxr/0.5.0:
     resolution: {integrity: sha512-IUMDPSXnYIbEO2IereEFcgcqfDREOgmbGqtrMpVPpACTU6pltYLwHgVkrnYv0XhWEcjio9sYEfIEzgn3c7nDqA==}
     dev: true
+
+  /alea/1.0.1:
+    resolution: {integrity: sha512-QU+wv+ziDXaMxRdsQg/aH7sVfWdhKps5YP97IIwFkHCsbDZA3k87JXoZ5/iuemf4ntytzIWeScrRpae8+lDrXA==}
+    dev: false
 
   /esbuild-android-64/0.14.54:
     resolution: {integrity: sha512-Tz2++Aqqz0rJ7kYBfz+iqyE3QMycD4vk7LBRyWaAVFgFtQ/O8EJOnVmTOiDWYZ/uYzB4kvP+bqejYdVKzE5lAQ==}

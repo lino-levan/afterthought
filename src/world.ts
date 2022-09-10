@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { createNoise3D, createNoise2D } from 'simplex-noise';
 import { textures } from "./textures";
 import { Physics } from "./physics";
 import { Player } from "./player";
 import { generateMesh, mod } from "./constants";
+import { Biomes } from "./biomes";
 
 const generateMeshWorker = new Worker(new URL('./workers/generateMesh.ts', import.meta.url), {
   type: 'module'
@@ -15,12 +15,14 @@ export class World {
   private tempChunkData: Record<string, {mesh:THREE.Mesh | null, colliders: string[] | null}> = {}
   scene: THREE.Scene
   private physics: Physics
-  private noise3d = createNoise3D()
-  private noise2d = createNoise2D()
+  private seed: string
+  private biomes: Biomes
 
   constructor(scene: THREE.Scene, physics: Physics) {
     this.scene = scene
     this.physics = physics
+    this.seed = (Math.random() + 1).toString(36).substring(2)
+    this.biomes = new Biomes(this.seed)
 
     generateMeshWorker.onmessage = (event) => {
       const { positions, uv, chunkX, chunkY, chunkZ, chunkName, colliders } = JSON.parse(event.data)
@@ -36,94 +38,7 @@ export class World {
 
     if(this.chunks.hasOwnProperty(chunkName)) return chunkName
 
-    this.chunks[chunkName] = []
-
-    let biomes = ["snow", "grass", "sand"]
-    const chunkBiome = biomes[Math.floor((this.noise2d(chunkX/20, chunkZ/20) + 1)/2 * biomes.length)]
-
-    for(let x = 0; x<16; x++) {
-      this.chunks[chunkName].push([])
-      for(let y = 0; y < 16; y++) {
-        this.chunks[chunkName][x].push([])
-        for(let z = 0; z < 16; z++) {
-          let rockDensity = this.noise3d((x + chunkX * 16)/50, (y + chunkY * 16)/50, (z + chunkZ * 16)/50)
-
-          let height = Math.round(this.noise2d((x + chunkX * 16)/100, (z + chunkZ * 16)/100) * 8)
-          height += Math.round(this.noise2d((x + chunkX * 16)/50, (z + chunkZ * 16)/50) * 4)
-
-          let tile = ''
-
-          if(rockDensity < 0.5) {
-            switch (chunkBiome) {
-              case "grass":
-                if(y + chunkY * 16 < height) {
-                  if(y + (chunkY * 16) + 1 >= height) {
-                    tile = 'grass'
-                  } else if(y + (chunkY * 16) + 4 >= height) {
-                    tile = 'dirt'
-                  } else {
-                    tile = 'rock'
-                  }
-                }
-                break;
-
-              case "snow":
-                let copiumDensity = this.noise3d((x + chunkX * 16)/2, (y + chunkY * 16)/2, (z + chunkZ * 16)/2)
-
-                if(y + chunkY * 16 < height) {
-                  if(y + (chunkY * 16) + 4 >= height) {
-                    tile = 'snow'
-                  } else {
-                    if(copiumDensity < -0.85) {
-                      tile = 'copium'
-                    } else {
-                      tile = 'rock'
-                    }
-                  }
-                }
-                break;
-
-              case "sand":
-                if(y + chunkY * 16 < height) {
-                  if(y + (chunkY * 16) + 4 >= height) {
-                    tile = 'sand'
-                  } else {
-                    tile = 'sandstone'
-                  }
-                }
-                break;
-            }
-          }
-          
-
-          this.chunks[chunkName][x][y].push(tile)
-        }
-      }
-    }
-
-    // Vegetation Passs
-    for(let x = 0; x<16; x++) {
-      for(let y = 1; y < 16; y++) {
-        for(let z = 0; z < 16; z++) {
-          let block = this.chunks[chunkName][x][y-1][z]
-
-          let foliageNoise = this.noise2d((x + chunkX * 16)/2, (z + chunkZ * 16)/2)
-          if(block === "grass") {
-
-            if(foliageNoise < -0.9 && y < 12 && x > 2 && x < 14 && z > 2 && z < 14) {
-              this.chunks[chunkName][x][y][z] = "wood"
-              this.chunks[chunkName][x][y+1][z] = "wood"
-              this.chunks[chunkName][x][y+2][z] = "wood"
-              this.chunks[chunkName][x][y+3][z] = "leaves"
-              this.chunks[chunkName][x+1][y+2][z] = "leaves"
-              this.chunks[chunkName][x-1][y+2][z] = "leaves"
-              this.chunks[chunkName][x][y+2][z+1] = "leaves"
-              this.chunks[chunkName][x][y+2][z-1] = "leaves"
-            }
-          }
-        }
-      }
-    }
+    this.chunks[chunkName] = this.biomes.getChunk(chunkX, chunkY, chunkZ)
 
     return chunkName
   }

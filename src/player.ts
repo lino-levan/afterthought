@@ -80,6 +80,10 @@ export class Player {
       this.mouseDown[e.button]= false
     })
 
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault() // prevent menu from showing up
+    })
+
     this.canvas.addEventListener('keydown', (e) => {
       this.keys[e.key] = true
 
@@ -134,7 +138,26 @@ export class Player {
     const vel = this.physicsObject.linvel()
 
     if(this.keys[' ']) {
-      velocity.y = this.settings.jumpStength
+      const playerPos = this.physicsObject.translation()
+
+      const a = {
+        minX: playerPos.x - 0.3,
+        minY: playerPos.y - 0.9,
+        minZ: playerPos.z - 0.3,
+        maxX: playerPos.x + 0.3,
+        maxY: playerPos.y + 0.9,
+        maxZ: playerPos.z + 0.3
+      }
+
+      let blockPos = {
+        x: Math.floor(playerPos.x),
+        y: Math.floor(playerPos.y-1),
+        z: Math.floor(playerPos.z)
+      }
+
+      if(this.world.getBlock(blockPos.x, blockPos.y, blockPos.z) !== "" && a.minX <= blockPos.x + 1 && a.maxX >= blockPos.x && a.minY <= blockPos.y + 1 && a.maxY >= blockPos.y && a.minZ <= blockPos.z + 1 && a.maxZ >= blockPos.z) {
+        velocity.y = this.settings.jumpStength
+      }
     }
 
     if(this.keys['r']) {
@@ -158,7 +181,7 @@ export class Player {
 
     this.physicsObject.setLinvel({
       x: velocity.x,
-      y: Math.max(Math.min(vel.y + velocity.y, 10), -20),
+      y: Math.max(Math.min(velocity.y || vel.y, 10), -20),
       z: velocity.z
     }, true)
 
@@ -258,7 +281,7 @@ export class Player {
       let uv: number[] = [] // uv buffer
 
       const b = (1/textures["break"].textures.length) // the size of each texture
-      const e = 0.01 // error correction amount
+      const e = 0.0001 // error correction amount
       const k = textures["break"].textures.findIndex((val)=>val===texture)
 
       positions.push(

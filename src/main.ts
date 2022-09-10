@@ -30,10 +30,9 @@ RAPIER.init().then(() => {
     
     renderer.render(scene, player.camera);
 
-    player.update()
-
-    world.update(player)
     physics.step()
+    player.update()
+    world.update(player)
     
     requestAnimationFrame(render);
   }
