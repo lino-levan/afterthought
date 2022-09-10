@@ -166,7 +166,8 @@ export class Player {
     }
 
     if(this.keys['c']) {
-      this.settings.creative = true
+      this.settings.creative = !this.settings.creative
+      this.keys['c'] = false
     }
 
     if(this.keys['Shift']) {
@@ -281,7 +282,7 @@ export class Player {
       // draw destruction texture (even more ugly I know)
       const geometry = new THREE.BufferGeometry();
       const {x, y, z} = blockPos
-      const texture = Math.floor(this.break.destructionTimer / (config.blocks[blockType].resistance/10)).toString()
+      const texture = Math.floor(this.break.destructionTimer / (this.settings.creative ? 1 : config.blocks[blockType].resistance/10)).toString()
       let positions: number[] = [] // vertex buffer
       let uv: number[] = [] // uv buffer
 
@@ -416,7 +417,7 @@ export class Player {
       }
     }
 
-    if(this.break.destructionTimer > config.blocks[blockType].resistance) {
+    if(this.break.destructionTimer > (this.settings.creative ? 10 : config.blocks[blockType].resistance)) {
       this.break.destructionTimer = 0
       this.world.removeBlock(blockPos.x, blockPos.y, blockPos.z)
 

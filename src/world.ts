@@ -4,6 +4,7 @@ import { Physics } from "./physics";
 import { Player } from "./player";
 import { generateMesh, mod } from "./constants";
 import { Biomes } from "./biomes";
+import { tickBlock } from "./blocks";
 
 const generateMeshWorker = new Worker(new URL('./workers/generateMesh.ts', import.meta.url), {
   type: 'module'
@@ -12,7 +13,7 @@ const generateMeshWorker = new Worker(new URL('./workers/generateMesh.ts', impor
 export class World {
   // A world is made up of many 16x16x16 chunks
   private chunks: Record<string, string[][][]> = {}
-  private tempChunkData: Record<string, {mesh:THREE.Mesh | null, colliders: string[] | null}> = {}
+  private loadedChunkData: Record<string, {mesh:THREE.Mesh | null, colliders: string[] | null}> = {}
   scene: THREE.Scene
   private physics: Physics
   private seed: string
@@ -66,7 +67,7 @@ export class World {
     chunk = this.generateTerrain(chunkX, chunkY, chunkZ-1)
     validChunks[chunk] = this.chunks[chunk]
 
-    this.tempChunkData[chunkName] = {
+    this.loadedChunkData[chunkName] = {
       mesh: null,
       colliders: null
     } 
@@ -86,6 +87,8 @@ export class World {
   }
 
   addChunk(positions, uv, chunkX, chunkY, chunkZ, chunkName, colliders) {
+    this.unloadChunk(chunkX, chunkY, chunkZ)
+
     const geometry = new THREE.BufferGeometry();
 
     geometry.setAttribute('position', new THREE.Float32BufferAttribute( positions, 3 ) );
@@ -105,7 +108,7 @@ export class World {
       physColliders.push(this.physics.addBlock(pos[0], pos[1], pos[2]))
     }
 
-    this.tempChunkData[chunkName] = {
+    this.loadedChunkData[chunkName] = {
       mesh,
       colliders: physColliders
     }
@@ -114,8 +117,8 @@ export class World {
   unloadChunk(chunkX, chunkY, chunkZ) {
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`
 
-    if(this.tempChunkData[chunkName]) {
-      const mesh = this.tempChunkData[chunkName].mesh
+    if(this.loadedChunkData[chunkName]) {
+      const mesh = this.loadedChunkData[chunkName].mesh
       if(mesh !== null) {
         mesh.removeFromParent()
         mesh.geometry.dispose()
@@ -127,7 +130,7 @@ export class World {
         }
       }
 
-      const colliders = this.tempChunkData[chunkName].colliders
+      const colliders = this.loadedChunkData[chunkName].colliders
       if(colliders !== null) {
         for(let collider of colliders) {
           this.physics.removeBlock(collider)
@@ -135,7 +138,7 @@ export class World {
       }
 
       // Remove mesh from rendering
-      delete this.tempChunkData[chunkName]
+      delete this.loadedChunkData[chunkName]
     }
   }
 
@@ -148,7 +151,7 @@ export class World {
     ]
 
     // unload chunks too far away
-    for (let chunkName of Object.keys(this.tempChunkData)) {
+    for (let chunkName of Object.keys(this.loadedChunkData)) {
       let chunk = chunkName.split("|").map((n)=>parseInt(n))
       if(Math.abs(chunkPos[0]-chunk[0]) > 3) {
         this.unloadChunk(chunk[0], chunk[1], chunk[2])
@@ -161,13 +164,38 @@ export class World {
       }
     }
 
+    // tick chunks
+    let dirtyChunks: number[][] = []
+
+    for (let chunkName of Object.keys(this.loadedChunkData)) {
+      let chunk = chunkName.split("|").map((n)=>parseInt(n))
+
+      this.generateTerrain(chunk[0]-1, chunk[1], chunk[2])
+      this.generateTerrain(chunk[0]+1, chunk[1], chunk[2])
+      this.generateTerrain(chunk[0], chunk[1]-1, chunk[2])
+      this.generateTerrain(chunk[0], chunk[1]+1, chunk[2])
+      this.generateTerrain(chunk[0], chunk[1], chunk[2]-1)
+      this.generateTerrain(chunk[0], chunk[1], chunk[2]+1)
+
+      for(let i = 0; i < 50; i++) {
+        let pos = [Math.floor(Math.random()*16), Math.floor(Math.random()*16), Math.floor(Math.random()*16)]
+        let block = this.chunks[chunkName][pos[0]][pos[1]][pos[2]]
+  
+        dirtyChunks = [...new Set([...dirtyChunks, ...tickBlock(block, pos, chunk, this.chunks)])]
+      }
+    }
+
+    for(let chunk of dirtyChunks) {
+      this.buildMesh(chunk[0], chunk[1], chunk[2], true)
+    }
+
     // load close chunks
     for(let x = -3; x < 3; x++) {
       for(let y = -2; y < 2; y++) {
         for(let z = -3; z < 3; z++) {
           let chunkName = this.generateTerrain(x + chunkPos[0], y + chunkPos[1], z + chunkPos[2])
 
-          if(this.tempChunkData.hasOwnProperty(chunkName)) continue
+          if(this.loadedChunkData.hasOwnProperty(chunkName)) continue
 
           this.buildMesh(x + chunkPos[0], y + chunkPos[1], z + chunkPos[2], sync)
         }
