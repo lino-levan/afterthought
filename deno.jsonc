@@ -1,0 +1,15 @@
+{
+  "tasks": {
+    "start": "deno run -A --unstable ./src/server/main.ts",
+    "dev": "deno run -A --unstable --watch ./src/server/main.ts",
+    "build": "deno compile -A --unstable ./src/server/main.ts"
+  },
+  "lint": {
+    "rules": {
+      "exclude": [
+        "no-explicit-any"
+      ]
+    }
+  },
+  "importMap": "./import_map.json"
+}

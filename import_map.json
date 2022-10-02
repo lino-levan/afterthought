@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "alea": "npm:alea",
+    "simplex-noise": "npm:simplex-noise"
+  }
+}

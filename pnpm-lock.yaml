@@ -1,7 +1,6 @@
 lockfileVersion: 5.4
 
 specifiers:
-  '@dimforge/rapier3d': ^0.9.0
   '@dimforge/rapier3d-compat': ^0.9.0
   '@types/three': ^0.144.0
   alea: ^1.0.1
@@ -10,7 +9,6 @@ specifiers:
   vite: ^3.0.9
 
 dependencies:
-  '@dimforge/rapier3d': 0.9.0
   '@dimforge/rapier3d-compat': 0.9.0
   alea: 1.0.1
   simplex-noise: 4.0.0
@@ -24,10 +22,6 @@ packages:
 
   /@dimforge/rapier3d-compat/0.9.0:
     resolution: {integrity: sha512-zjgpXS/fFx1lZqjW1DfVUEaRHFpekzWjF6eSGb/xeEUf74YO0NDlQ93Hj0oI2k+i6QIoQk9KcIaEGwQZkullrw==}
-    dev: false
-
-  /@dimforge/rapier3d/0.9.0:
-    resolution: {integrity: sha512-43O4/k5naF/oIwExpcjCMzVUCL39Gz7iutp/uAgRE4ifa7cIckdxSeJaNFv7iYY+57Q7nKDqlzZglPjE0hWM0w==}
     dev: false
 
   /@esbuild/linux-loong64/0.14.54:
