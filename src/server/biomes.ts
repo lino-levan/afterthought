@@ -175,7 +175,12 @@ export class Biomes {
             ) {
               continue;
             }
-            if ((noise3D(aX / 200, aY / 200, aZ / 200) * 1/2) > 0 && (noise3D(aX / 200, aY / 200, aZ / 200) * 1/2) + (noise3D(aX / 100, aY / 100, aZ / 100) * 1/4) + (noise3D(aX / 50, aY / 50, aZ / 50) * 1/8) > 0.5) continue;
+            if (
+              (noise3D(aX / 200, aY / 200, aZ / 200) * 1 / 2) > 0 &&
+              (noise3D(aX / 200, aY / 200, aZ / 200) * 1 / 2) +
+                    (noise3D(aX / 100, aY / 100, aZ / 100) * 1 / 4) +
+                    (noise3D(aX / 50, aY / 50, aZ / 50) * 1 / 8) > 0.5
+            ) continue;
 
             chunk[x][y][z] = block;
           }

@@ -186,10 +186,10 @@ export class Player {
       this.settings.sprint = !this.settings.sprint;
       this.keys["Control"] = false;
 
-      if(this.settings.sprint) {
-        this.camera.fov += 15
+      if (this.settings.sprint) {
+        this.camera.fov += 15;
       } else {
-        this.camera.fov -= 15
+        this.camera.fov -= 15;
       }
     }
 
@@ -327,7 +327,9 @@ export class Player {
 
       const b = (1 / config.textures["break"].textures.length); // the size of each texture
       const e = 0.001; // error correction amount
-      const k = config.textures["break"].textures.findIndex((val) => val === texture);
+      const k = config.textures["break"].textures.findIndex((val) =>
+        val === texture
+      );
 
       positions.push(
         x + 1 + e,
@@ -520,7 +522,9 @@ export class Player {
       );
       geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
       geometry.computeVertexNormals();
-      const material = new MeshBasicMaterial({ map: textures["break"].combined });
+      const material = new MeshBasicMaterial({
+        map: textures["break"].combined,
+      });
       material.transparent = true;
       const mesh = new THREE.Mesh(geometry, material);
       this.world.scene.add(mesh);

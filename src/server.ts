@@ -37,7 +37,7 @@ export class Server {
     return new Promise((resolve) => {
       const ws = this.ws;
 
-      if(!ws) return resolve()
+      if (!ws) return resolve();
 
       function connected() {
         if (ws?.readyState === ws?.OPEN) {
@@ -165,9 +165,9 @@ export class Server {
 let server: Server | null = null; // new Server("ws://localhost:8000")
 
 export function setServer(ip?: string) {
-  server = new Server(ip)
+  server = new Server(ip);
 }
 
 export function getServer(): Server {
-  return server!
+  return server!;
 }

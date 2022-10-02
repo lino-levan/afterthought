@@ -58,7 +58,7 @@ class Server {
   }
 }
 
-const connections: WebSocket[] = []
+const connections: WebSocket[] = [];
 
 const server = new Server();
 
@@ -69,22 +69,25 @@ function reqHandler(req: Request) {
   const { socket: ws, response } = Deno.upgradeWebSocket(req);
 
   function onClose() {
-    console.log("Player left")
-    connections.splice(connections.indexOf(ws),1)
+    console.log("Player left");
+    connections.splice(connections.indexOf(ws), 1);
   }
 
   ws.onopen = () => {
-    console.log("Player joined")
-    connections.push(ws)
+    console.log("Player joined");
+    connections.push(ws);
 
     setInterval(() => {
-      if(ws.readyState === WebSocket.CLOSED && ws.readyState === WebSocket.CLOSING) {
-        onClose()
+      if (
+        ws.readyState === WebSocket.CLOSED &&
+        ws.readyState === WebSocket.CLOSING
+      ) {
+        onClose();
       }
-    }, 100)
-  }
+    }, 100);
+  };
 
-  ws.onclose = onClose
+  ws.onclose = onClose;
 
   ws.onerror = (e) => console.log(e instanceof ErrorEvent ? e.message : e.type);
 
@@ -135,10 +138,14 @@ function reqHandler(req: Request) {
             chunk,
           }));
 
-          const { chunkName } = server.world.getChunkPosition(globalX, globalY, globalZ)
+          const { chunkName } = server.world.getChunkPosition(
+            globalX,
+            globalY,
+            globalZ,
+          );
 
-          connections.forEach((ws)=>{
-            if(ws.readyState !== ws.OPEN) return
+          connections.forEach((ws) => {
+            if (ws.readyState !== ws.OPEN) return;
 
             ws.send(JSON.stringify({
               command: "setChunk",
@@ -147,8 +154,8 @@ function reqHandler(req: Request) {
               x: globalX,
               y: globalY,
               z: globalZ,
-            }))
-          })
+            }));
+          });
           return;
         }
 
@@ -168,9 +175,13 @@ function reqHandler(req: Request) {
             chunk,
           }));
 
-          const { chunkName } = server.world.getChunkPosition(globalX, globalY, globalZ)
+          const { chunkName } = server.world.getChunkPosition(
+            globalX,
+            globalY,
+            globalZ,
+          );
 
-          connections.forEach((ws)=>{
+          connections.forEach((ws) => {
             ws.send(JSON.stringify({
               command: "setChunk",
               chunk,
@@ -178,8 +189,8 @@ function reqHandler(req: Request) {
               x: globalX,
               y: globalY,
               z: globalZ,
-            }))
-          })
+            }));
+          });
           return;
         }
 

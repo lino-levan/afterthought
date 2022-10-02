@@ -25,12 +25,12 @@ export class World {
   > = {};
   scene: THREE.Scene;
   private physics: Physics;
-  private server: Server
+  private server: Server;
 
   constructor(scene: THREE.Scene, physics: Physics) {
     this.scene = scene;
     this.physics = physics;
-    this.server = getServer()
+    this.server = getServer();
 
     generateMeshWorker.onmessage = (event) => {
       const { positions, uv, chunkX, chunkY, chunkZ, chunkName, colliders } =
@@ -49,16 +49,16 @@ export class World {
       );
     };
 
-    this.server.addEventListener(async (data)=>{
-      switch(data.command) {
-        case("setChunk"): {
-          const {chunkName, chunk, x, y, z} = data
-          this.chunks[chunkName] = chunk
+    this.server.addEventListener(async (data) => {
+      switch (data.command) {
+        case ("setChunk"): {
+          const { chunkName, chunk, x, y, z } = data;
+          this.chunks[chunkName] = chunk;
 
-          this.reloadChunks({global:{x, y, z}})
+          this.reloadChunks({ global: { x, y, z } });
         }
       }
-    })
+    });
   }
 
   async generateTerrain(chunkX, chunkY, chunkZ) {
@@ -207,18 +207,18 @@ export class World {
       Math.floor(position.z / 16),
     ];
 
-    const viewDistance = 3
+    const viewDistance = 3;
 
     // unload chunks too far away
     for (let chunkName of Object.keys(this.loadedChunkData)) {
       let chunk = chunkName.split("|").map((n) => parseInt(n));
-      if (Math.abs(chunkPos[0] - chunk[0]) > viewDistance+1) {
+      if (Math.abs(chunkPos[0] - chunk[0]) > viewDistance + 1) {
         this.unloadChunk(chunk[0], chunk[1], chunk[2]);
       }
-      if (Math.abs(chunkPos[1] - chunk[1]) > viewDistance+1) {
+      if (Math.abs(chunkPos[1] - chunk[1]) > viewDistance + 1) {
         this.unloadChunk(chunk[0], chunk[1], chunk[2]);
       }
-      if (Math.abs(chunkPos[2] - chunk[2]) > viewDistance+1) {
+      if (Math.abs(chunkPos[2] - chunk[2]) > viewDistance + 1) {
         this.unloadChunk(chunk[0], chunk[1], chunk[2]);
       }
     }
@@ -262,42 +262,51 @@ export class World {
       chunkName: `${chunkX}|${chunkY}|${chunkZ}`,
       x,
       y,
-      z
-    }
+      z,
+    };
   }
 
-  async reloadChunks({global, chunk}: {global?: {x: number, y: number, z: number}, chunk?: {x: number, y: number, z: number}}) {
-    if(chunk) {
-      this.buildMesh(chunk.x, chunk.y, chunk.z, true)
-      this.buildMesh(chunk.x-1, chunk.y, chunk.z, true)
-      this.buildMesh(chunk.x+1, chunk.y, chunk.z, true)
-      this.buildMesh(chunk.x, chunk.y-1, chunk.z, true)
-      this.buildMesh(chunk.x, chunk.y+1, chunk.z, true)
-      this.buildMesh(chunk.x, chunk.y, chunk.z-1, true)
-      this.buildMesh(chunk.x, chunk.y, chunk.z+1, true)
-    } else if(global) {
-      const {chunkX, chunkY, chunkZ, x, y, z} = this.getChunkPosition(global.x, global.y, global.z)
+  async reloadChunks(
+    { global, chunk }: {
+      global?: { x: number; y: number; z: number };
+      chunk?: { x: number; y: number; z: number };
+    },
+  ) {
+    if (chunk) {
+      this.buildMesh(chunk.x, chunk.y, chunk.z, true);
+      this.buildMesh(chunk.x - 1, chunk.y, chunk.z, true);
+      this.buildMesh(chunk.x + 1, chunk.y, chunk.z, true);
+      this.buildMesh(chunk.x, chunk.y - 1, chunk.z, true);
+      this.buildMesh(chunk.x, chunk.y + 1, chunk.z, true);
+      this.buildMesh(chunk.x, chunk.y, chunk.z - 1, true);
+      this.buildMesh(chunk.x, chunk.y, chunk.z + 1, true);
+    } else if (global) {
+      const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
+        global.x,
+        global.y,
+        global.z,
+      );
 
-      this.buildMesh(chunkX, chunkY, chunkZ, true)
+      this.buildMesh(chunkX, chunkY, chunkZ, true);
 
       // deal with chunk boundaries
-      if(x === 0) {
-        this.buildMesh(chunkX-1, chunkY, chunkZ, true)
+      if (x === 0) {
+        this.buildMesh(chunkX - 1, chunkY, chunkZ, true);
       }
-      if(x === 15) {
-        this.buildMesh(chunkX+1, chunkY, chunkZ, true)
+      if (x === 15) {
+        this.buildMesh(chunkX + 1, chunkY, chunkZ, true);
       }
-      if(y === 0) {
-        this.buildMesh(chunkX, chunkY-1, chunkZ, true)
+      if (y === 0) {
+        this.buildMesh(chunkX, chunkY - 1, chunkZ, true);
       }
-      if(y === 15) {
-        this.buildMesh(chunkX, chunkY+1, chunkZ, true)
+      if (y === 15) {
+        this.buildMesh(chunkX, chunkY + 1, chunkZ, true);
       }
-      if(z === 0) {
-        this.buildMesh(chunkX, chunkY, chunkZ-1, true)
+      if (z === 0) {
+        this.buildMesh(chunkX, chunkY, chunkZ - 1, true);
       }
-      if(z === 15) {
-        this.buildMesh(chunkX, chunkY, chunkZ+1, true)
+      if (z === 15) {
+        this.buildMesh(chunkX, chunkY, chunkZ + 1, true);
       }
     }
   }
@@ -305,11 +314,15 @@ export class World {
   async removeBlock(globalX, globalY, globalZ) {
     await this.server.breakBlock(globalX, globalY, globalZ);
 
-    this.reloadChunks({global:{x: globalX, y: globalY, z: globalZ}})
+    this.reloadChunks({ global: { x: globalX, y: globalY, z: globalZ } });
   }
 
   async getBlock(globalX, globalY, globalZ) {
-    const {chunkX, chunkY, chunkZ, x, y, z} = this.getChunkPosition(globalX, globalY, globalZ)
+    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
+      globalX,
+      globalY,
+      globalZ,
+    );
 
     const chunkName = await this.generateTerrain(chunkX, chunkY, chunkZ);
 
@@ -318,6 +331,6 @@ export class World {
 
   async setBlock(globalX, globalY, globalZ, block) {
     await this.server.placeBlock(globalX, globalY, globalZ, block);
-    this.reloadChunks({global:{x: globalX, y: globalY, z: globalZ}})
+    this.reloadChunks({ global: { x: globalX, y: globalY, z: globalZ } });
   }
 }

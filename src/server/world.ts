@@ -42,12 +42,16 @@ export class World {
       chunkName: `${chunkX}|${chunkY}|${chunkZ}`,
       x,
       y,
-      z
-    }
+      z,
+    };
   }
 
   removeBlock(globalX: number, globalY: number, globalZ: number) {
-    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(globalX, globalY, globalZ)
+    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
+      globalX,
+      globalY,
+      globalZ,
+    );
 
     const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ);
 
@@ -57,7 +61,11 @@ export class World {
   }
 
   getBlock(globalX: number, globalY: number, globalZ: number) {
-    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(globalX, globalY, globalZ)
+    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
+      globalX,
+      globalY,
+      globalZ,
+    );
 
     const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ);
 
@@ -65,7 +73,11 @@ export class World {
   }
 
   setBlock(globalX: number, globalY: number, globalZ: number, block: string) {
-    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(globalX, globalY, globalZ)
+    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
+      globalX,
+      globalY,
+      globalZ,
+    );
 
     const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ);
 

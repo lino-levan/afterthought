@@ -17,7 +17,7 @@ const ctx = guiCanvas.getContext("2d") as CanvasRenderingContext2D;
 RAPIER.init().then(async () => {
   await loadTextures();
 
-  const gui = new Gui(ctx)
+  const gui = new Gui(ctx);
 
   async function renderGui(time) {
     canvas.width = window.innerWidth;
@@ -25,12 +25,12 @@ RAPIER.init().then(async () => {
     guiCanvas.width = window.innerWidth;
     guiCanvas.height = window.innerHeight;
 
-    gui.update()
-    requestAnimationFrame(renderGui)
+    gui.update();
+    requestAnimationFrame(renderGui);
   }
-  requestAnimationFrame(renderGui)
+  requestAnimationFrame(renderGui);
 
-  await gui.start()
+  await gui.start();
 
   await getServer().connection();
 
@@ -40,8 +40,8 @@ RAPIER.init().then(async () => {
   const player = new Player(renderer, canvas, physics, world);
 
   // update the world and player of the world
-  gui.world = world
-  gui.player = player
+  gui.world = world;
+  gui.player = player;
 
   world.update(player, true);
 
