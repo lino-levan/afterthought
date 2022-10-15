@@ -70,7 +70,7 @@ const biomes: Record<string, {
         name: "speckle",
         aboveRandom: 0.95,
         atSurface: true,
-        config: { block: "short_grass"},
+        config: { block: "short_grass" },
       },
     ],
   },
@@ -172,8 +172,13 @@ export class Biomes {
         if (aY < height) {
           const dy = height - aY;
           for (
-            const { block, belowRelative, aboveRelative, aboveAbsolute, aboveRandom }
-              of biomes[biome].layers
+            const {
+              block,
+              belowRelative,
+              aboveRelative,
+              aboveAbsolute,
+              aboveRandom,
+            } of biomes[biome].layers
           ) {
             if (aboveRelative !== undefined && dy >= aboveRelative) continue;
             if (belowRelative !== undefined && dy <= belowRelative) continue;

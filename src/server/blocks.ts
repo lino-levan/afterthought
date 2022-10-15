@@ -79,5 +79,5 @@ export function blockUpdate(
       }
     }
   }
-  return []
+  return [];
 }

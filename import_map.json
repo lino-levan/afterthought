@@ -1,6 +1,6 @@
 {
   "imports": {
     "alea": "npm:alea",
-    "simplex-noise": "npm:simplex-noise"
+    "simplex-noise": "https://esm.sh/simplex-noise@4.0.1"
   }
 }

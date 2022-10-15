@@ -1,5 +1,4 @@
-![](/public/gui/logo.png)
-Just another MC clone for now.
+![](/public/gui/logo.png) Just another MC clone for now.
 
 ## Features
 

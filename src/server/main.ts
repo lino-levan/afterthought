@@ -62,13 +62,13 @@ const connections: WebSocket[] = [];
 
 const server = new Server();
 
-server.world.addEventListener((type)=>{
+server.world.addEventListener((type) => {
   connections.forEach((ws) => {
     if (ws.readyState !== ws.OPEN) return;
 
     ws.send(JSON.stringify(type));
   });
-})
+});
 
 function reqHandler(req: Request) {
   if (req.headers.get("upgrade") != "websocket") {

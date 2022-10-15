@@ -162,7 +162,11 @@ export class Player {
         z: Math.floor(playerPos.z),
       };
 
-      const blockType = await this.world.getBlock(blockPos.x, blockPos.y, blockPos.z)
+      const blockType = await this.world.getBlock(
+        blockPos.x,
+        blockPos.y,
+        blockPos.z,
+      );
 
       if (
         this.settings.creative ||

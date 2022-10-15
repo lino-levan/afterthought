@@ -1,5 +1,5 @@
 import { Biomes } from "./biomes.ts";
-import { randomBlockTick, blockUpdate } from "./blocks.ts";
+import { blockUpdate, randomBlockTick } from "./blocks.ts";
 
 function mod(n: number, m: number) {
   return ((n % m) + m) % m;
@@ -10,7 +10,7 @@ export class World {
   chunks: Record<string, string[][][]> = {};
   private seed: string;
   private biomes: Biomes;
-  private listeners: ((type: Record<string, any>)=>void)[] = []
+  private listeners: ((type: Record<string, any>) => void)[] = [];
 
   constructor() {
     this.seed = (Math.random() + 1).toString(36).substring(2);
@@ -58,7 +58,7 @@ export class World {
 
     this.chunks[chunkName][x][y][z] = "";
 
-    this.doBlockUpdate(globalX, globalY, globalZ)
+    this.doBlockUpdate(globalX, globalY, globalZ);
 
     return this.chunks[chunkName];
   }
@@ -86,7 +86,7 @@ export class World {
 
     this.chunks[chunkName][x][y][z] = block;
 
-    this.doBlockUpdate(globalX, globalY, globalZ)
+    this.doBlockUpdate(globalX, globalY, globalZ);
 
     return this.chunks[chunkName];
   }
@@ -131,40 +131,47 @@ export class World {
   }
 
   private doBlockUpdate(globalX: number, globalY: number, globalZ: number) {
-    let dirtyChunks: string[] = []
+    let dirtyChunks: string[] = [];
     const positions = [
       [globalX, globalY, globalZ],
-      [globalX+1, globalY, globalZ],
-      [globalX-1, globalY, globalZ],
-      [globalX, globalY+1, globalZ],
-      [globalX, globalY-1, globalZ],
-      [globalX, globalY, globalZ+1],
-      [globalX, globalY, globalZ-1],
-    ]
+      [globalX + 1, globalY, globalZ],
+      [globalX - 1, globalY, globalZ],
+      [globalX, globalY + 1, globalZ],
+      [globalX, globalY - 1, globalZ],
+      [globalX, globalY, globalZ + 1],
+      [globalX, globalY, globalZ - 1],
+    ];
 
-    for(const position of positions) {
-      const { chunkX, chunkY, chunkZ, chunkName, x, y, z } = this.getChunkPosition(
-        position[0],
-        position[1],
-        position[2],
-      );
-  
+    for (const position of positions) {
+      const { chunkX, chunkY, chunkZ, chunkName, x, y, z } = this
+        .getChunkPosition(
+          position[0],
+          position[1],
+          position[2],
+        );
+
       dirtyChunks = [
         ...dirtyChunks,
-        ...blockUpdate(this.chunks[chunkName][x][y][z], [x, y, z], [chunkX, chunkY, chunkZ], this.chunks),
-      ]
+        ...blockUpdate(this.chunks[chunkName][x][y][z], [x, y, z], [
+          chunkX,
+          chunkY,
+          chunkZ,
+        ], this.chunks),
+      ];
     }
 
-    for(const dirtyChunk of dirtyChunks) {
-      this.listeners.forEach(listener => listener({
-        type: 'setChunk',
-        chunkName: dirtyChunk,
-        chunk: this.chunks[dirtyChunk]
-      }))
+    for (const dirtyChunk of dirtyChunks) {
+      this.listeners.forEach((listener) =>
+        listener({
+          type: "setChunk",
+          chunkName: dirtyChunk,
+          chunk: this.chunks[dirtyChunk],
+        })
+      );
     }
   }
 
-  addEventListener(callback: (type: Record<string, any>)=>void) {
-    this.listeners.push(callback)
+  addEventListener(callback: (type: Record<string, any>) => void) {
+    this.listeners.push(callback);
   }
 }
