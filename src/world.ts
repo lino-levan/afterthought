@@ -21,7 +21,7 @@ export class World {
   private chunks: Record<string, string[][][]> = {};
   private loadedChunkData: Record<
     string,
-    { mesh: THREE.Mesh | null; colliders: string[] | null }
+    { meshes: THREE.Mesh[] | null; colliders: string[] | null }
   > = {};
   scene: THREE.Scene;
   private physics: Physics;
@@ -33,14 +33,13 @@ export class World {
     this.server = getServer();
 
     generateMeshWorker.onmessage = (event) => {
-      const { positions, uv, chunkX, chunkY, chunkZ, chunkName, colliders } =
+      const { meshData, chunkX, chunkY, chunkZ, chunkName, colliders } =
         JSON.parse(event.data);
 
-      if (positions.length === 0) return;
+      // if (positions.length === 0) return;
 
       this.addChunk(
-        positions,
-        uv,
+        meshData,
         chunkX,
         chunkY,
         chunkZ,
@@ -52,10 +51,10 @@ export class World {
     this.server.addEventListener(async (data) => {
       switch (data.command) {
         case ("setChunk"): {
-          const { chunkName, chunk, x, y, z } = data;
+          const { chunkName, chunk } = data;
           this.chunks[chunkName] = chunk;
 
-          this.reloadChunks({ global: { x, y, z } });
+          this.reloadChunks({ chunkName });
         }
       }
     });
@@ -83,7 +82,7 @@ export class World {
 
     if (!this.loadedChunkData.hasOwnProperty(chunkName)) {
       this.loadedChunkData[chunkName] = {
-        mesh: null,
+        meshes: null,
         colliders: null,
       };
     }
@@ -110,7 +109,7 @@ export class World {
     validChunks[chunk] = this.chunks[chunk];
 
     if (sync) {
-      const { positions, uv, colliders } = generateMesh(
+      const { meshData, colliders } = generateMesh(
         chunkX,
         chunkY,
         chunkZ,
@@ -119,8 +118,7 @@ export class World {
       );
 
       this.addChunk(
-        positions,
-        uv,
+        meshData,
         chunkX,
         chunkY,
         chunkZ,
@@ -137,27 +135,41 @@ export class World {
     }
   }
 
-  addChunk(positions, uv, chunkX, chunkY, chunkZ, chunkName, colliders) {
+  addChunk(meshData: Record<string, {uv: number[], positions: number[]}>, chunkX: number, chunkY: number, chunkZ: number, chunkName: string, colliders) {
     this.unloadChunk(chunkX, chunkY, chunkZ);
 
-    const geometry = new THREE.BufferGeometry();
+    const meshes: THREE.Mesh[] = []
 
-    geometry.setAttribute(
-      "position",
-      new THREE.Float32BufferAttribute(positions, 3),
-    );
-    geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-    geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uv, 2));
-    geometry.computeVertexNormals();
+    for(const [layer, rawMeshData] of Object.entries(meshData)) {
+      const { positions, uv } = rawMeshData;
 
-    const mesh = new THREE.Mesh(
-      geometry,
-      new THREE.MeshBasicMaterial({ map: textures["blocks"].combined }),
-    );
-    mesh.translateX(chunkX * 16);
-    mesh.translateY(chunkY * 16);
-    mesh.translateZ(chunkZ * 16);
-    this.scene.add(mesh);
+      const geometry = new THREE.BufferGeometry();
+
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3),
+      );
+      geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+      geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uv, 2));
+      geometry.computeVertexNormals();
+
+      const material = new THREE.MeshBasicMaterial({ map: textures["blocks"].combined })
+
+      if(layer === "transparent") {
+        material.alphaTest = 0.15
+      }
+
+      const mesh = new THREE.Mesh(
+        geometry,
+        material,
+      );
+      mesh.translateX(chunkX * 16);
+      mesh.translateY(chunkY * 16);
+      mesh.translateZ(chunkZ * 16);
+      this.scene.add(mesh);
+
+      meshes.push(mesh)
+    }
 
     // add colliders
     let physColliders: string[] = [];
@@ -166,7 +178,7 @@ export class World {
     }
 
     this.loadedChunkData[chunkName] = {
-      mesh,
+      meshes,
       colliders: physColliders,
     };
   }
@@ -175,15 +187,17 @@ export class World {
     const chunkName = `${chunkX}|${chunkY}|${chunkZ}`;
 
     if (this.loadedChunkData[chunkName]) {
-      const mesh = this.loadedChunkData[chunkName].mesh;
-      if (mesh !== null) {
-        mesh.removeFromParent();
-        mesh.geometry.dispose();
-
-        if (Array.isArray(mesh.material)) {
-          mesh.material.map((mat) => mat.dispose());
-        } else {
-          mesh.material.dispose();
+      const meshes = this.loadedChunkData[chunkName].meshes
+      if(meshes) {
+        for(const mesh of meshes) {
+          mesh.removeFromParent();
+          mesh.geometry.dispose();
+  
+          if (Array.isArray(mesh.material)) {
+            mesh.material.map((mat) => mat.dispose());
+          } else {
+            mesh.material.dispose();
+          }
         }
       }
 
@@ -267,9 +281,10 @@ export class World {
   }
 
   async reloadChunks(
-    { global, chunk }: {
+    { global, chunk, chunkName }: {
       global?: { x: number; y: number; z: number };
       chunk?: { x: number; y: number; z: number };
+      chunkName?: string
     },
   ) {
     if (chunk) {
@@ -280,7 +295,16 @@ export class World {
       this.buildMesh(chunk.x, chunk.y + 1, chunk.z, true);
       this.buildMesh(chunk.x, chunk.y, chunk.z - 1, true);
       this.buildMesh(chunk.x, chunk.y, chunk.z + 1, true);
-    } else if (global) {
+    } else if (chunkName) {
+      const [chunkX, chunkY, chunkZ] = chunkName.split("|").map((v)=>parseInt(v))
+      this.buildMesh(chunkX, chunkY, chunkZ, true);
+      this.buildMesh(chunkX - 1, chunkY, chunkZ, true);
+      this.buildMesh(chunkX + 1, chunkY, chunkZ, true);
+      this.buildMesh(chunkX, chunkY - 1, chunkZ, true);
+      this.buildMesh(chunkX, chunkY + 1, chunkZ, true);
+      this.buildMesh(chunkX, chunkY, chunkZ - 1, true);
+      this.buildMesh(chunkX, chunkY, chunkZ + 1, true);
+    } else  if (global) {
       const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
         global.x,
         global.y,

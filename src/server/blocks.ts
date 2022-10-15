@@ -8,7 +8,7 @@ import { getBlockFromChunk } from "./utils.ts";
  * @param chunks world chunks
  * @returns boolean if dirty
  */
-export function tickBlock(
+export function randomBlockTick(
   block: string,
   pos: number[],
   chunk: number[],
@@ -59,4 +59,25 @@ export function tickBlock(
     }
   }
   return [];
+}
+
+export function blockUpdate(
+  block: string,
+  pos: number[],
+  chunk: number[],
+  chunks: Record<string, string[][][]>,
+) {
+  const chunkName = `${chunk[0]}|${chunk[1]}|${chunk[2]}`;
+
+  switch (block) {
+    case "short_grass": {
+      if (
+        getBlockFromChunk(chunkName, pos[0], pos[1] - 1, pos[2], chunks) === ""
+      ) {
+        chunks[chunkName][pos[0]][pos[1]][pos[2]] = "";
+        return [chunkName];
+      }
+    }
+  }
+  return []
 }

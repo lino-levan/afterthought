@@ -1,5 +1,4 @@
-<img style="width: 400px; image-rendering: pixelated" src="/public/gui/logo.png">
-
+![](/public/gui/logo.png)
 Just another MC clone for now.
 
 ## Features

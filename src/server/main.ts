@@ -3,7 +3,7 @@
  Any updates here should probably be reflected in the singleplayer version.
 */
 
-import { serve } from "https://deno.land/std@0.155.0/http/mod.ts";
+import { serve } from "https://deno.land/std@0.159.0/http/mod.ts";
 import { World } from "./world.ts";
 
 class Server {
@@ -61,6 +61,14 @@ class Server {
 const connections: WebSocket[] = [];
 
 const server = new Server();
+
+server.world.addEventListener((type)=>{
+  connections.forEach((ws) => {
+    if (ws.readyState !== ws.OPEN) return;
+
+    ws.send(JSON.stringify(type));
+  });
+})
 
 function reqHandler(req: Request) {
   if (req.headers.get("upgrade") != "websocket") {

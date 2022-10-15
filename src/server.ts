@@ -30,6 +30,12 @@ export class Server {
     } else {
       this.world = new World();
       // setInterval(this.tick.bind(this), 1000 / 20)
+
+      this.world.addEventListener((data: Record<string, any>)=>{
+        this.eventListener.forEach((eventListener) => {
+          eventListener(data);
+        });
+      })
     }
   }
 

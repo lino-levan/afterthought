@@ -32,5 +32,11 @@ export function getBlockFromChunk(
     z = 0;
   }
 
+  chunkName = `${chunk[0]}|${chunk[1]}|${chunk[2]}`
+
+  if(chunks[chunkName] === undefined) {
+    return ''
+  }
+
   return chunks[`${chunk[0]}|${chunk[1]}|${chunk[2]}`][x][y][z];
 }

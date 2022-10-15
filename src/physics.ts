@@ -43,5 +43,7 @@ export class Physics {
 
   step() {
     this.world.step();
+
+    console.log(Object.keys(this.blocks).length)
   }
 }

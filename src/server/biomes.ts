@@ -19,6 +19,7 @@ const biomes: Record<string, {
   layers: {
     block: string;
     belowRelative?: number;
+    aboveRelative?: number;
     aboveAbsolute?: number;
     aboveRandom?: number;
   }[];
@@ -65,12 +66,18 @@ const biomes: Record<string, {
         aboveRandom: 0.999,
         config: { block: "copium", sphere: true, radius: 1, replace: "rock" },
       },
+      {
+        name: "speckle",
+        aboveRandom: 0.95,
+        atSurface: true,
+        config: { block: "short_grass"},
+      },
     ],
   },
   mountain: {
-    height: 4,
+    height: 30,
     smoothness: 100,
-    base: 50,
+    base: 30,
     layers: [
       { block: "rock", belowRelative: 0 },
       { block: "copium", belowRelative: 0, aboveRandom: 0.99 },
@@ -165,9 +172,10 @@ export class Biomes {
         if (aY < height) {
           const dy = height - aY;
           for (
-            const { block, belowRelative, aboveAbsolute, aboveRandom }
+            const { block, belowRelative, aboveRelative, aboveAbsolute, aboveRandom }
               of biomes[biome].layers
           ) {
+            if (aboveRelative !== undefined && dy >= aboveRelative) continue;
             if (belowRelative !== undefined && dy <= belowRelative) continue;
             if (aboveAbsolute !== undefined && aY < aboveAbsolute) continue;
             if (

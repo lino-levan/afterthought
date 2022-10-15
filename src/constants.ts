@@ -39,11 +39,52 @@ export function getBlockFromChunk(
 
 export function generateMesh(chunkX, chunkY, chunkZ, chunkName, chunks) {
   const colliders: number[][] = []; // collider data
-  const positions: number[] = []; // vertex buffer
-  const uv: number[] = []; // uv buffer
+  const meshData: Record<string, {
+    positions: number[] // vertex buffer
+    uv: number[] // uv buffer
+  }> = {};
+
+  meshData.base = {
+    positions: [],
+    uv: []
+  }
+
+  meshData.transparent = {
+    positions: [],
+    uv: []
+  }
 
   const b = (1 / config.textures["blocks"].textures.length); // the size of each texture
-  const e = 0; // error correction amount
+
+  const setData = (face: string, meshLayer: string, k: number, x: number, y: number, z: number) => {
+    const p = config.faces[face].positions
+    const u = config.faces[face].uvs
+
+    for(let i = 0; i < p.length; i += 3) {
+      meshData[meshLayer].positions.push(
+        x + p[i], y + p[i+1], z + p[i+2],
+      );
+    }
+
+    for(let i = 0; i < u.length; i += 2) {
+      meshData[meshLayer].uv.push(
+        u[i],
+        (k + u[i+1]) * b,
+      );
+    }
+  }
+
+  const isTransparent = (chunkName, x, y, z, chunks) => {
+    const block = getBlockFromChunk(chunkName, x, y, z, chunks)
+
+    return block === "" || config.blocks[block].transparent
+  }
+
+  const isSolid = (chunkName, x, y, z, chunks) => {
+    const block = getBlockFromChunk(chunkName, x, y, z, chunks)
+
+    return block !== "" && config.blocks[block].solid
+  }
 
   for (let x = 0; x < 16; x++) {
     for (let y = 0; y < 16; y++) {
@@ -51,278 +92,51 @@ export function generateMesh(chunkX, chunkY, chunkZ, chunkName, chunks) {
         let block = getBlockFromChunk(chunkName, x, y, z, chunks);
         if (block === "") continue;
 
-        let visible = false;
 
-        // draw top face
-        if (getBlockFromChunk(chunkName, x, y + 1, z, chunks) === "") {
+        const blockConfig = config.blocks[block]
+        const blockModel = config.models[blockConfig.model]
+        
+        for(let face of Object.keys(blockModel)) {
+          if(blockConfig.transparent) {
+            if(face === 'top' && getBlockFromChunk(chunkName, x, y + 1, z, chunks) !== "") continue
+            if(face === 'bottom' && getBlockFromChunk(chunkName, x, y - 1, z, chunks) !== "") continue
+            if(face === 'north' && getBlockFromChunk(chunkName, x + 1, y, z, chunks) !== "") continue
+            if(face === 'south' && getBlockFromChunk(chunkName, x - 1, y, z, chunks) !== "") continue
+            if(face === 'west' && getBlockFromChunk(chunkName, x, y, z + 1, chunks) !== "") continue
+            if(face === 'east' && getBlockFromChunk(chunkName, x, y, z - 1, chunks) !== "") continue
+          } else {
+            if(face === 'top' && !isTransparent(chunkName, x, y + 1, z, chunks)) continue
+            if(face === 'bottom' && !isTransparent(chunkName, x, y - 1, z, chunks)) continue
+            if(face === 'north' && !isTransparent(chunkName, x + 1, y, z, chunks)) continue
+            if(face === 'south' && !isTransparent(chunkName, x - 1, y, z, chunks)) continue
+            if(face === 'west' && !isTransparent(chunkName, x, y, z + 1, chunks)) continue
+            if(face === 'east' && !isTransparent(chunkName, x, y, z - 1, chunks)) continue
+          }
+
+
           const k = config.textures["blocks"].textures.findIndex((val) =>
-            val === config.blocks[block].textures[0]
+            val === blockConfig.textures[blockModel[face]]
           );
 
-          positions.push(
-            x + 1,
-            y + 1,
-            z,
-            x,
-            y + 1,
-            z + 1,
-            x + 1,
-            y + 1,
-            z + 1,
-            x + 1,
-            y + 1,
-            z,
-            x,
-            y + 1,
-            z,
-            x,
-            y + 1,
-            z + 1,
-          );
-          uv.push(
-            1,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            0,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-          );
-
-          visible = true;
+          setData(face, blockConfig.transparent ? 'transparent' : 'base' ,k, x, y, z)
         }
 
-        // draw bottom face
-        if (getBlockFromChunk(chunkName, x, y - 1, z, chunks) === "") {
-          const k = config.textures["blocks"].textures.findIndex((val) =>
-            val === config.blocks[block].textures[1]
-          );
-
-          positions.push(
-            x,
-            y,
-            z + 1,
-            x + 1,
-            y,
-            z,
-            x + 1,
-            y,
-            z + 1,
-            x + 1,
-            y,
-            z,
-            x,
-            y,
-            z + 1,
-            x,
-            y,
-            z,
-          );
-          uv.push(
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            1,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            0,
-            (k + e) * b,
-          );
-
-          visible = true;
+        if(!blockConfig.solid) continue
+        if(
+          isSolid(chunkName, x, y + 1, z, chunks) &&
+          isSolid(chunkName, x, y - 1, z, chunks) &&
+          isSolid(chunkName, x + 1, y, z, chunks) &&
+          isSolid(chunkName, x - 1, y, z, chunks) &&
+          isSolid(chunkName, x, y, z + 1, chunks) &&
+          isSolid(chunkName, x, y, z - 1, chunks)
+          ) {
+          continue
         }
 
-        // draw west face
-        if (getBlockFromChunk(chunkName, x - 1, y, z, chunks) === "") {
-          const k = config.textures["blocks"].textures.findIndex((val) =>
-            val === config.blocks[block].textures[2]
-          );
-
-          positions.push(
-            x,
-            y,
-            z + 1,
-            x,
-            y + 1,
-            z + 1,
-            x,
-            y,
-            z,
-            x,
-            y + 1,
-            z + 1,
-            x,
-            y + 1,
-            z,
-            x,
-            y,
-            z,
-          );
-          uv.push(
-            0,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-          );
-
-          visible = true;
-        }
-
-        // draw east face
-        if (getBlockFromChunk(chunkName, x + 1, y, z, chunks) === "") {
-          const k = config.textures["blocks"].textures.findIndex((val) =>
-            val === config.blocks[block].textures[3]
-          );
-
-          positions.push(
-            x + 1,
-            y,
-            z + 1,
-            x + 1,
-            y,
-            z,
-            x + 1,
-            y + 1,
-            z + 1,
-            x + 1,
-            y + 1,
-            z + 1,
-            x + 1,
-            y,
-            z,
-            x + 1,
-            y + 1,
-            z,
-          );
-          uv.push(
-            0,
-            (k + e) * b,
-            1,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            1,
-            (k + 1 - e) * b,
-          );
-
-          visible = true;
-        }
-
-        // draw north face
-        if (getBlockFromChunk(chunkName, x, y, z - 1, chunks) === "") {
-          const k = config.textures["blocks"].textures.findIndex((val) =>
-            val === config.blocks[block].textures[4]
-          );
-
-          positions.push(
-            x,
-            y,
-            z,
-            x,
-            y + 1,
-            z,
-            x + 1,
-            y,
-            z,
-            x + 1,
-            y,
-            z,
-            x,
-            y + 1,
-            z,
-            x + 1,
-            y + 1,
-            z,
-          );
-          uv.push(
-            0,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            1,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + 1 - e) * b,
-          );
-
-          visible = true;
-        }
-
-        // draw south face
-        if (getBlockFromChunk(chunkName, x, y, z + 1, chunks) === "") {
-          const k = config.textures["blocks"].textures.findIndex((val) =>
-            val === config.blocks[block].textures[5]
-          );
-
-          positions.push(
-            x,
-            y,
-            z + 1,
-            x + 1,
-            y,
-            z + 1,
-            x,
-            y + 1,
-            z + 1,
-            x + 1,
-            y,
-            z + 1,
-            x + 1,
-            y + 1,
-            z + 1,
-            x,
-            y + 1,
-            z + 1,
-          );
-          uv.push(
-            0,
-            (k + e) * b,
-            1,
-            (k + e) * b,
-            0,
-            (k + 1 - e) * b,
-            1,
-            (k + e) * b,
-            1,
-            (k + 1 - e) * b,
-            0,
-            (k + 1 - e) * b,
-          );
-
-          visible = true;
-        }
-
-        if (visible) {
-          colliders.push([x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16]);
-        }
+        colliders.push([x + chunkX * 16, y + chunkY * 16, z + chunkZ * 16]);
       }
     }
   }
 
-  return { positions, uv, chunkX, chunkY, chunkZ, chunkName, colliders };
+  return { meshData, chunkX, chunkY, chunkZ, chunkName, colliders };
 }

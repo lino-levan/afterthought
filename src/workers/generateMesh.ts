@@ -7,7 +7,7 @@ onmessage = (event) => {
   const chunkName = `${chunkX}|${chunkY}|${chunkZ}`;
   const chunks = event.data.chunks;
 
-  const { positions, uv, colliders } = generateMesh(
+  const { meshData, colliders } = generateMesh(
     chunkX,
     chunkY,
     chunkZ,
@@ -17,8 +17,7 @@ onmessage = (event) => {
 
   postMessage(
     JSON.stringify({
-      positions,
-      uv,
+      meshData,
       chunkX,
       chunkY,
       chunkZ,

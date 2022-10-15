@@ -2,47 +2,39 @@
   "blocks": {
     "dirt": {
       "textures": [
-        "dirt",
-        "dirt",
-        "dirt",
-        "dirt",
-        "dirt",
         "dirt"
       ],
-      "resistance": 50
+      "resistance": 50,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "leaves": {
       "textures": [
-        "leaves",
-        "leaves",
-        "leaves",
-        "leaves",
-        "leaves",
         "leaves"
       ],
-      "resistance": 10
+      "resistance": 10,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "rock": {
       "textures": [
-        "rock",
-        "rock",
-        "rock",
-        "rock",
-        "rock",
         "rock"
       ],
-      "resistance": 100
+      "resistance": 100,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "copium": {
       "textures": [
-        "copium",
-        "copium",
-        "copium",
-        "copium",
-        "copium",
         "copium"
       ],
-      "resistance": 150
+      "resistance": 150,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "grass": {
       "textures": [
@@ -53,7 +45,10 @@
         "grass_side",
         "grass_side"
       ],
-      "resistance": 50
+      "resistance": 50,
+      "model": "block",
+      "transparent": false,
+      "solid": true
     },
     "wood": {
       "textures": [
@@ -64,51 +59,64 @@
         "wood_side",
         "wood_side"
       ],
-      "resistance": 75
+      "resistance": 75,
+      "model": "block",
+      "transparent": false,
+      "solid": true
+    },
+    "glass": {
+      "textures": [
+        "glass"
+      ],
+      "resistance": 50,
+      "model": "all",
+      "transparent": true,
+      "solid": true
     },
     "ice": {
       "textures": [
-        "ice",
-        "ice",
-        "ice",
-        "ice",
-        "ice",
         "ice"
       ],
-      "resistance": 50
+      "resistance": 50,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "sand": {
       "textures": [
-        "sand",
-        "sand",
-        "sand",
-        "sand",
-        "sand",
         "sand"
       ],
-      "resistance": 50
+      "resistance": 50,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "sandstone": {
       "textures": [
-        "sandstone",
-        "sandstone",
-        "sandstone",
-        "sandstone",
-        "sandstone",
         "sandstone"
       ],
-      "resistance": 75
+      "resistance": 75,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     },
     "snow": {
       "textures": [
-        "snow",
-        "snow",
-        "snow",
-        "snow",
-        "snow",
         "snow"
       ],
-      "resistance": 50
+      "resistance": 50,
+      "model": "all",
+      "transparent": false,
+      "solid": true
+    },
+    "short_grass": {
+      "textures": [
+        "grass"
+      ],
+      "resistance": 10,
+      "model": "cross",
+      "transparent": true,
+      "solid": false
     }
   },
   "textures": {
@@ -125,7 +133,9 @@
         "grass_top",
         "grass_side",
         "dirt",
-        "copium"
+        "copium",
+        "grass",
+        "glass"
       ]
     },
     "break": {
@@ -146,6 +156,199 @@
       "textures": [
         "logo",
         "alphabet"
+      ]
+    }
+  },
+  "models": {
+    "all": {
+      "top": 0,
+      "bottom": 0,
+      "west": 0,
+      "east": 0,
+      "north": 0,
+      "south": 0
+    },
+    "block": {
+      "top": 0,
+      "bottom": 1,
+      "west": 2,
+      "east": 3,
+      "north": 4,
+      "south": 5
+    },
+    "cross": {
+      "cross": 0
+    }
+  },
+  "faces": {
+    "top": {
+      "positions": [
+        1, 1, 0,
+        0, 1, 1,
+        1, 1, 1,
+        1, 1, 0,
+        0, 1, 0,
+        0, 1, 1
+      ],
+      "uvs": [
+        1, 0,
+        0, 1,
+        1, 1,
+        1, 0,
+        0, 0,
+        0, 1
+      ]
+    },
+    "bottom": {
+      "positions": [
+        0, 0, 1,
+        1, 0, 0,
+        1, 0, 1,
+        1, 0, 0,
+        0, 0, 1,
+        0, 0, 0
+      ],
+      "uvs": [
+        0, 1,
+        1, 0,
+        1, 1,
+        1, 0,
+        0, 1,
+        0, 0
+      ]
+    },
+    "north": {
+      "positions": [
+        1, 0, 1,
+        1, 0, 0,
+        1, 1, 1,
+        1, 1, 1,
+        1, 0, 0,
+        1, 1, 0
+      ],
+      "uvs": [
+        0, 0,
+        1, 0,
+        0, 1,
+        0, 1,
+        1, 0,
+        1, 1
+      ]
+    },
+    "south": {
+      "positions": [
+        0, 0, 1,
+        0, 1, 1,
+        0, 0, 0,
+        0, 1, 1,
+        0, 1, 0,
+        0, 0, 0
+      ],
+      "uvs": [
+        0, 0,
+        0, 1,
+        1, 0,
+        0, 1,
+        1, 1,
+        1, 0
+      ]
+    },
+    "west": {
+      "positions": [
+        0, 0, 1,
+        1, 0, 1,
+        0, 1, 1,
+        1, 0, 1,
+        1, 1, 1,
+        0, 1, 1
+      ],
+      "uvs": [
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 0,
+        1, 1,
+        0, 1
+      ]
+    },
+    "east": {
+      "positions": [
+        0, 0, 0,
+        0, 1, 0,
+        1, 0, 0,
+        1, 0, 0,
+        0, 1, 0,
+        1, 1, 0
+      ],
+      "uvs": [
+        0, 0,
+        0, 1,
+        1, 0,
+        1, 0,
+        0, 1,
+        1, 1
+      ]
+    },
+    "cross": {
+      "positions": [
+        0.15, 0, 0.15,
+        0.15, 1, 0.15,
+        0.85, 0, 0.85,
+        0.85, 0, 0.85,
+        0.15, 1, 0.15,
+        0.85, 1, 0.85,
+        0.15, 1, 0.15,
+        0.15, 0, 0.15,
+        0.85, 0, 0.85,
+        0.15, 1, 0.15,
+        0.85, 0, 0.85,
+        0.85, 1, 0.85,
+
+        0.85, 0, 0.15,
+        0.85, 1, 0.15,
+
+        0.15, 0, 0.85,
+        0.15, 0, 0.85,
+
+        0.85, 1, 0.15,
+
+        0.15, 1, 0.85,
+
+        0.85, 1, 0.15,
+        0.85, 0, 0.15,
+
+        0.15, 0, 0.85,
+
+        0.85, 1, 0.15,
+
+        0.15, 0, 0.85,
+        0.15, 1, 0.85
+      ],
+      "uvs": [
+        0, 0,
+        0, 1,
+        1, 0,
+        1, 0,
+        0, 1,
+        1, 1,
+        0, 1,
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 0,
+        1, 1,
+        0, 0,
+        0, 1,
+        1, 0,
+        1, 0,
+        0, 1,
+        1, 1,
+        0, 1,
+        0, 0,
+        1, 0,
+        0, 1,
+        1, 0,
+        1, 1
       ]
     }
   }

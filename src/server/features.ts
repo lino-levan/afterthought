@@ -62,6 +62,20 @@ export function generateFeature(
       break;
     }
 
+    case "speckle": {
+      if (basePosition[1] < 1) return;
+
+      const pos = basePosition;
+
+      if (chunk[pos[0]][pos[1] - 1][pos[2]] === "") return;
+
+      const block = config?.block || "short_grass";
+
+      chunk[pos[0]][pos[1]][pos[2]] = block;
+
+      break;
+    }
+
     case "patch": {
       let radius = config?.radius || 3;
       const block = config?.block || "stone";

@@ -162,12 +162,18 @@ export class Player {
         z: Math.floor(playerPos.z),
       };
 
+      const blockType = await this.world.getBlock(blockPos.x, blockPos.y, blockPos.z)
+
       if (
         this.settings.creative ||
-        await this.world.getBlock(blockPos.x, blockPos.y, blockPos.z) !== "" &&
+        (
+          (
+            blockType !== "" && config.blocks[blockType].solid
+          ) &&
           a.minX <= blockPos.x + 1 && a.maxX >= blockPos.x &&
           a.minY <= blockPos.y + 1 && a.maxY >= blockPos.y &&
           a.minZ <= blockPos.z + 1 && a.maxZ >= blockPos.z
+        )
       ) {
         velocity.y = this.settings.jumpStength;
       }
@@ -525,7 +531,7 @@ export class Player {
       const material = new MeshBasicMaterial({
         map: textures["break"].combined,
       });
-      material.transparent = true;
+      material.alphaTest = 0.15;
       const mesh = new THREE.Mesh(geometry, material);
       this.world.scene.add(mesh);
 
