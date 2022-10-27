@@ -4,6 +4,7 @@ import { Physics } from "./physics";
 import { Player } from "./player";
 import { generateMesh } from "./constants";
 import { getServer, Server } from "./server";
+import settings from "./settings";
 
 const generateMeshWorker = new Worker(
   new URL("./workers/generateMesh.ts", import.meta.url),
@@ -230,7 +231,7 @@ export class World {
       Math.floor(position.z / 16),
     ];
 
-    const viewDistance = 3;
+    const viewDistance = settings.renderDistance;
 
     // unload chunks too far away
     for (let chunkName of Object.keys(this.loadedChunkData)) {

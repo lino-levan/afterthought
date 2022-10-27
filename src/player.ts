@@ -5,6 +5,7 @@ import { textures } from "./textures";
 import { World } from "./world";
 import config from "./config.json";
 import { MeshBasicMaterial } from "three";
+import settings from "./settings";
 
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
 
@@ -58,7 +59,7 @@ export class Player {
     this.world = world;
     this.renderer.setClearColor(0xccfffc);
 
-    const fov = 75;
+    const fov = settings.fov;
     const aspect = 2;
     const near = 0.1;
     const far = 200;

@@ -32,7 +32,7 @@ class Server {
       this.world.generateTerrain(chunkX, chunkY, chunkZ - 1),
     ];
 
-    chunkNames.forEach((chunkName) => {
+    chunkNames.forEach((chunkName: string) => {
       chunks[chunkName] = this.world.chunks[chunkName];
     });
 
