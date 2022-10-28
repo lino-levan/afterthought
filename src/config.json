@@ -15,7 +15,7 @@
       ],
       "resistance": 10,
       "model": "all",
-      "transparent": false,
+      "transparent": true,
       "solid": true
     },
     "rock": {
@@ -93,10 +93,15 @@
     },
     "sandstone": {
       "textures": [
-        "sandstone"
+        "sandstone_top",
+        "sandstone_top",
+        "sandstone_side",
+        "sandstone_side",
+        "sandstone_side",
+        "sandstone_side"
       ],
       "resistance": 75,
-      "model": "all",
+      "model": "block",
       "transparent": false,
       "solid": true
     },
@@ -117,6 +122,15 @@
       "model": "cross",
       "transparent": true,
       "solid": false
+    },
+    "short_cactus": {
+      "textures": [
+        "short_cactus"
+      ],
+      "resistance": 10,
+      "model": "cross",
+      "transparent": true,
+      "solid": false
     }
   },
   "textures": {
@@ -125,7 +139,8 @@
         "wood_top",
         "wood_side",
         "snow",
-        "sandstone",
+        "sandstone_top",
+        "sandstone_side",
         "sand",
         "rock",
         "leaves",
@@ -135,7 +150,8 @@
         "dirt",
         "copium",
         "grass",
-        "glass"
+        "glass",
+        "short_cactus"
       ]
     },
     "break": {

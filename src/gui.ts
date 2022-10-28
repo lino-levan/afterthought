@@ -406,7 +406,6 @@ export class Gui {
           this.screen = "multiplayer";
           address.text = "";
           name.text = "";
-          console.log(this.data);
           this.keys["Escape"] = false;
         }
         break;
@@ -442,7 +441,7 @@ export class Gui {
           20,
           guiScale / 2,
           (slider) => {
-            settings.renderDistance = Math.round((slider) * 8) + 2;
+            settings.renderDistance = Math.round(slider * 8) + 2;
             settings.saveSettings();
           },
           {
@@ -451,10 +450,26 @@ export class Gui {
           },
         );
 
+        this.drawSlider(
+          "MOUSE_SENSITIVITY_SLIDER",
+          canvas.width / 2,
+          260,
+          20,
+          guiScale / 2,
+          (slider) => {
+            settings.mouseSensitivity = Math.round(slider * 20) + 1;
+            settings.saveSettings();
+          },
+          {
+            text: `Sensitivity: ${settings.mouseSensitivity}`,
+            defaultSlider: (settings.mouseSensitivity - 1) / 20,
+          },
+        );
+
         this.drawButton(
           `Fullscreen: ${settings.fullScreen ? "On" : "Off"}`,
           canvas.width / 2,
-          260,
+          320,
           guiScale / 2,
           () => {
             settings.fullScreen = !settings.fullScreen;
@@ -474,7 +489,7 @@ export class Gui {
         this.drawButton(
           "Done",
           canvas.width / 2,
-          380,
+          440,
           guiScale / 2,
           () => {
             this.screen = "title";
@@ -495,7 +510,7 @@ export class Gui {
         ctx.fillRect(canvas.width / 2 - 1, canvas.height / 2 - 10, 2, 20);
         ctx.fillRect(canvas.width / 2 - 10, canvas.height / 2 - 1, 20, 2);
 
-        this.drawText("Afterthought v0.1.2", 5, 5, guiScale / 4);
+        this.drawText("Afterthought v0.1.3", 5, 5, guiScale / 4);
 
         // TODO: Hotbar
         // for(let i = 0; i < 9; i++) {

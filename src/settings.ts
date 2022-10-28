@@ -3,6 +3,7 @@ class Settings {
   renderDistance: number;
   fullScreen: boolean;
   servers: { name: string; ip: string }[];
+  mouseSensitivity: number;
 
   constructor() {
     this.fov = parseInt(localStorage.getItem("fov") || "60");
@@ -11,6 +12,9 @@ class Settings {
     );
     this.fullScreen = localStorage.getItem("fullScreen") === "true";
     this.servers = JSON.parse(localStorage.getItem("servers") || "[]");
+    this.mouseSensitivity = parseInt(
+      localStorage.getItem("mouseSensitivity") || "10",
+    );
   }
 
   saveSettings() {
@@ -18,6 +22,7 @@ class Settings {
     localStorage.setItem("renderDistance", this.renderDistance.toString());
     localStorage.setItem("fullScreen", this.fullScreen.toString());
     localStorage.setItem("servers", JSON.stringify(this.servers));
+    localStorage.setItem("mouseSensitivity", this.mouseSensitivity.toString());
   }
 }
 

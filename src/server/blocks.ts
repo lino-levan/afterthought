@@ -77,6 +77,17 @@ export function blockUpdate(
         chunks[chunkName][pos[0]][pos[1]][pos[2]] = "";
         return [chunkName];
       }
+      break
+    }
+
+    case "short_cactus": {
+      if (
+        getBlockFromChunk(chunkName, pos[0], pos[1] - 1, pos[2], chunks) === ""
+      ) {
+        chunks[chunkName][pos[0]][pos[1]][pos[2]] = "";
+        return [chunkName];
+      }
+      break
     }
   }
   return [];

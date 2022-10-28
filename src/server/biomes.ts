@@ -15,6 +15,7 @@ function map(
 const biomes: Record<string, {
   height: number;
   smoothness: number;
+  jaggedness: number;
   base: number;
   layers: {
     block: string;
@@ -35,6 +36,7 @@ const biomes: Record<string, {
   desert: {
     height: 20,
     smoothness: 100,
+    jaggedness: 1,
     base: 0,
     layers: [
       { block: "sand", belowRelative: 0 },
@@ -42,11 +44,18 @@ const biomes: Record<string, {
     ],
     features: [
       { name: "temple", aboveRandom: 0.9999, atSurface: true },
+      {
+        name: "speckle",
+        aboveRandom: 0.995,
+        atSurface: true,
+        config: { block: "short_cactus" },
+      },
     ],
   },
   plains: {
     height: 4,
     smoothness: 100,
+    jaggedness: 1,
     base: 0,
     layers: [
       { block: "grass", belowRelative: 0 },
@@ -75,14 +84,17 @@ const biomes: Record<string, {
     ],
   },
   mountain: {
-    height: 30,
+    height: 100,
     smoothness: 100,
+    jaggedness: 4,
     base: 30,
     layers: [
       { block: "rock", belowRelative: 0 },
       { block: "copium", belowRelative: 0, aboveRandom: 0.99 },
       { block: "snow", belowRelative: 0, aboveAbsolute: 35 },
       { block: "snow", belowRelative: 0, aboveAbsolute: 30, aboveRandom: 0.1 },
+      { block: "snow", belowRelative: 0, aboveAbsolute: 25, aboveRandom: 0.2 },
+      { block: "snow", belowRelative: 0, aboveAbsolute: 20, aboveRandom: 0.4 },
     ],
     features: [
       {
@@ -105,20 +117,20 @@ export class Biomes {
 
   getHeight(x: number, z: number, biome: string, noise2D: NoiseFunction2D) {
     let val =
-      noise2D(x / biomes[biome].smoothness, z / biomes[biome].smoothness) *
+      (noise2D(x / biomes[biome].smoothness, z / biomes[biome].smoothness) ** biomes[biome].jaggedness) *
       biomes[biome].height * 1 / 2;
-    val += noise2D(
+    val += (noise2D(
       x / (biomes[biome].smoothness / 2),
       z / (biomes[biome].smoothness / 2),
-    ) * biomes[biome].height * 1 / 4;
-    val += noise2D(
+    ) ** biomes[biome].jaggedness) * biomes[biome].height * 1 / 4;
+    val += (noise2D(
       x / (biomes[biome].smoothness / 4),
       z / (biomes[biome].smoothness / 4),
-    ) * biomes[biome].height * 1 / 8;
-    val += noise2D(
+    ) ** biomes[biome].jaggedness) * biomes[biome].height * 1 / 8;
+    val += (noise2D(
       x / (biomes[biome].smoothness / 8),
       z / (biomes[biome].smoothness / 8),
-    ) * biomes[biome].height * 1 / 16;
+    ) ** biomes[biome].jaggedness) * biomes[biome].height * 1 / 16;
 
     val += biomes[biome].base;
     return val;
@@ -247,7 +259,7 @@ export class Biomes {
             continue;
           }
 
-          generateFeature(name, chunk, [x, y, z], config);
+          generateFeature(name, chunk, [x, y, z], config, prngByChunk);
           break;
         }
       },

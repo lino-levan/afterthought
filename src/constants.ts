@@ -185,3 +185,23 @@ export function generateMesh(chunkX, chunkY, chunkZ, chunkName, chunks) {
 
   return { meshData, chunkX, chunkY, chunkZ, chunkName, colliders };
 }
+
+export function generateHitboxFromPoints(points: number[]) {
+  let minX = Number.MAX_SAFE_INTEGER;
+  let maxX = Number.MIN_SAFE_INTEGER;
+  let minY = Number.MAX_SAFE_INTEGER;
+  let maxY = Number.MIN_SAFE_INTEGER;
+  let minZ = Number.MAX_SAFE_INTEGER;
+  let maxZ = Number.MIN_SAFE_INTEGER;
+
+  for(let i = 0; i < points.length; i+=3) {
+    minX = Math.min(minX, points[i])
+    minY = Math.min(minY, points[i+1])
+    minZ = Math.min(minZ, points[i+2])
+    maxX = Math.max(maxX, points[i])
+    maxY = Math.max(maxY, points[i+1])
+    maxZ = Math.max(maxZ, points[i+2])
+  }
+
+  return { minX, maxX, minY, maxY, minZ, maxZ}
+}

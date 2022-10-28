@@ -6,6 +6,7 @@ import { World } from "./world";
 import config from "./config.json";
 import { MeshBasicMaterial } from "three";
 import settings from "./settings";
+import { generateHitboxFromPoints } from "./constants";
 
 const UP_AXIS = new THREE.Vector3(0, 1, 0);
 
@@ -20,6 +21,7 @@ export class Player {
     false,
     false,
   ];
+  cameraRotation = 0
   settings = {
     speed: 5,
     jumpStength: 8,
@@ -61,7 +63,7 @@ export class Player {
 
     const fov = settings.fov;
     const aspect = 2;
-    const near = 0.1;
+    const near = 0.01;
     const far = 200;
     this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
@@ -75,9 +77,15 @@ export class Player {
 
     this.canvas.addEventListener("mousemove", (e) => {
       if (!e.movementX) return;
+      
+      const initialRotation = this.cameraRotation
+      let newRotation = this.cameraRotation + e.movementY * -0.0001 * settings.mouseSensitivity
+      newRotation = THREE.MathUtils.clamp(newRotation, -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01)
 
-      this.camera.rotateOnWorldAxis(UP_AXIS, e.movementX * -0.001);
-      this.camera.rotateX(e.movementY * -0.001);
+      this.cameraRotation = newRotation
+
+      this.camera.rotateOnWorldAxis(UP_AXIS, e.movementX * -0.0001 * settings.mouseSensitivity);
+      this.camera.rotateX(newRotation - initialRotation);
     });
 
     this.canvas.addEventListener("mousedown", (e) => {
@@ -255,7 +263,7 @@ export class Player {
 
     let hit = false;
     let blockPos = { x: 0, y: 0, z: 0 };
-    let blockType: string;
+    let blockType: string = "";
 
     for (let i = 0; i < dist * steps; i++) {
       pos.add(step);
@@ -269,12 +277,21 @@ export class Player {
       blockType = await this.world.getBlock(blockPos.x, blockPos.y, blockPos.z);
 
       if (blockType) {
-        hit = true;
-        break;
+        const blockPoints: number[] = Object.keys(config.models[config.blocks[blockType].model]).map((name)=>config.faces[name].positions).flat()
+        const {minX, maxX, minY, maxY, minZ, maxZ} = generateHitboxFromPoints(blockPoints)
+
+        const p = {
+          x: pos.x - blockPos.x,
+          y: pos.y - blockPos.y,
+          z: pos.z - blockPos.z
+        }
+
+        if(p.x > minX && p.x < maxX && p.y > minY && p.y < maxY && p.z > minZ && p.z < maxZ) {
+          hit = true;
+          break;
+        }
       }
     }
-
-    blockType = await this.world.getBlock(blockPos.x, blockPos.y, blockPos.z);
 
     if (!hit) return;
 
@@ -294,29 +311,32 @@ export class Player {
     });
     const points: THREE.Vector3[] = [];
 
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x + 1, blockPos.y, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x + 1, blockPos.y + 1, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y + 1, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y, blockPos.z + 1));
-    points.push(new THREE.Vector3(blockPos.x + 1, blockPos.y, blockPos.z + 1));
-    points.push(new THREE.Vector3(blockPos.x + 1, blockPos.y, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x + 1, blockPos.y, blockPos.z + 1));
-    points.push(
-      new THREE.Vector3(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1),
-    );
-    points.push(new THREE.Vector3(blockPos.x + 1, blockPos.y + 1, blockPos.z));
-    points.push(
-      new THREE.Vector3(blockPos.x + 1, blockPos.y + 1, blockPos.z + 1),
-    );
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y + 1, blockPos.z + 1));
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y + 1, blockPos.z));
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y + 1, blockPos.z + 1));
-    points.push(new THREE.Vector3(blockPos.x, blockPos.y, blockPos.z + 1));
+    const blockPoints: number[] = Object.keys(config.models[config.blocks[blockType].model]).map((name)=>config.faces[name].positions).flat()
+
+    const {minX, maxX, minY, maxY, minZ, maxZ} = generateHitboxFromPoints(blockPoints)
+
+    points.push(new THREE.Vector3(minX, minY, minZ));
+    points.push(new THREE.Vector3(maxX, minY, minZ));
+    points.push(new THREE.Vector3(maxX, maxY, minZ));
+    points.push(new THREE.Vector3(minX, maxY, minZ));
+    points.push(new THREE.Vector3(minX, minY, minZ));
+    points.push(new THREE.Vector3(minX, minY, maxZ));
+    points.push(new THREE.Vector3(maxX, minY, maxZ));
+    points.push(new THREE.Vector3(maxX, minY, minZ));
+    points.push(new THREE.Vector3(maxX, minY, maxZ));
+    points.push(new THREE.Vector3(maxX, maxY, maxZ));
+    points.push(new THREE.Vector3(maxX, maxY, minZ));
+    points.push(new THREE.Vector3(maxX, maxY, maxZ));
+    points.push(new THREE.Vector3(minX, maxY, maxZ));
+    points.push(new THREE.Vector3(minX, maxY, minZ));
+    points.push(new THREE.Vector3(minX, maxY, maxZ));
+    points.push(new THREE.Vector3(minX, minY, maxZ));
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const line = new THREE.Line(geometry, material);
+    line.translateX(blockPos.x)
+    line.translateY(blockPos.y)
+    line.translateZ(blockPos.z)
     this.world.scene.add(line);
 
     this.break.blockOutline = line;
