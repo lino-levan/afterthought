@@ -73,15 +73,6 @@
       "transparent": true,
       "solid": true
     },
-    "ice": {
-      "textures": [
-        "ice"
-      ],
-      "resistance": 50,
-      "model": "all",
-      "transparent": false,
-      "solid": true
-    },
     "sand": {
       "textures": [
         "sand"
@@ -131,6 +122,15 @@
       "model": "cross",
       "transparent": true,
       "solid": false
+    },
+    "ice": {
+      "textures": [
+        "ice"
+      ],
+      "resistance": 50,
+      "model": "all",
+      "transparent": false,
+      "solid": true
     }
   },
   "textures": {

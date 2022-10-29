@@ -98,15 +98,58 @@ export class World {
 
     chunk = await this.generateTerrain(chunkX + 1, chunkY, chunkZ);
     validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY, chunkZ - 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY, chunkZ + 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY+1, chunkZ);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY+1, chunkZ - 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY+1, chunkZ + 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY-1, chunkZ);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY-1, chunkZ - 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX + 1, chunkY-1, chunkZ + 1);
+    validChunks[chunk] = this.chunks[chunk];
+
     chunk = await this.generateTerrain(chunkX - 1, chunkY, chunkZ);
     validChunks[chunk] = this.chunks[chunk];
-    chunk = await this.generateTerrain(chunkX, chunkY + 1, chunkZ);
+    chunk = await this.generateTerrain(chunkX - 1, chunkY, chunkZ - 1);
     validChunks[chunk] = this.chunks[chunk];
-    chunk = await this.generateTerrain(chunkX, chunkY - 1, chunkZ);
+    chunk = await this.generateTerrain(chunkX - 1, chunkY, chunkZ + 1);
     validChunks[chunk] = this.chunks[chunk];
-    chunk = await this.generateTerrain(chunkX, chunkY, chunkZ + 1);
+    chunk = await this.generateTerrain(chunkX - 1, chunkY+1, chunkZ);
     validChunks[chunk] = this.chunks[chunk];
-    chunk = await this.generateTerrain(chunkX, chunkY, chunkZ - 1);
+    chunk = await this.generateTerrain(chunkX - 1, chunkY+1, chunkZ - 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX - 1, chunkY+1, chunkZ + 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX - 1, chunkY-1, chunkZ);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX - 1, chunkY-1, chunkZ - 1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX - 1, chunkY-1, chunkZ + 1);
+    validChunks[chunk] = this.chunks[chunk];
+
+    chunk = await this.generateTerrain(chunkX, chunkY-1, chunkZ);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX, chunkY-1, chunkZ+1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX, chunkY-1, chunkZ-1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX, chunkY+1, chunkZ);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX, chunkY+1, chunkZ+1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX, chunkY+1, chunkZ-1);
+    validChunks[chunk] = this.chunks[chunk];
+
+    chunk = await this.generateTerrain(chunkX, chunkY, chunkZ+1);
+    validChunks[chunk] = this.chunks[chunk];
+    chunk = await this.generateTerrain(chunkX, chunkY, chunkZ-1);
     validChunks[chunk] = this.chunks[chunk];
 
     if (sync) {
@@ -137,7 +180,7 @@ export class World {
   }
 
   addChunk(
-    meshData: Record<string, { uv: number[]; positions: number[] }>,
+    meshData: Record<string, { uv: number[]; uv2: number[]; positions: number[] }>,
     chunkX: number,
     chunkY: number,
     chunkZ: number,
@@ -149,7 +192,7 @@ export class World {
     const meshes: THREE.Mesh[] = [];
 
     for (const [layer, rawMeshData] of Object.entries(meshData)) {
-      const { positions, uv } = rawMeshData;
+      const { positions, uv, uv2 } = rawMeshData;
 
       const geometry = new THREE.BufferGeometry();
 
@@ -158,11 +201,23 @@ export class World {
         new THREE.Float32BufferAttribute(positions, 3),
       );
       geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-      geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uv, 2));
+      geometry.setAttribute("uv2", new THREE.Float32BufferAttribute(uv2, 2));
       geometry.computeVertexNormals();
+
+      const canvas = document.createElement('canvas')
+      canvas.width = 100
+      canvas.height = 1
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+      var grd = ctx.createLinearGradient(0, 0, 100, 0)
+      grd.addColorStop(0, "#666666")
+      grd.addColorStop(1, "white")
+
+      ctx.fillStyle = grd
+      ctx.fillRect(0, 0, 100, 1)
 
       const material = new THREE.MeshBasicMaterial({
         map: textures["blocks"].combined,
+        lightMap: new THREE.CanvasTexture(canvas)
       });
 
       if (layer === "transparent") {
