@@ -510,7 +510,7 @@ export class Gui {
         ctx.fillRect(canvas.width / 2 - 1, canvas.height / 2 - 10, 2, 20);
         ctx.fillRect(canvas.width / 2 - 10, canvas.height / 2 - 1, 20, 2);
 
-        this.drawText("Afterthought v0.1.3", 5, 5, guiScale / 4);
+        this.drawText("Afterthought v0.1.4", 5, 5, guiScale / 4);
 
         // TODO: Hotbar
         // for(let i = 0; i < 9; i++) {
