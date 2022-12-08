@@ -151,6 +151,11 @@ export class Player {
       velocity.z += this.settings.speed * sideVector.z;
     }
 
+    if([this.keys["w"], this.keys["s"], this.keys["a"], this.keys["d"]].filter(x => x).length === 2) {
+      velocity.x /= Math.sqrt(2)
+      velocity.z /= Math.sqrt(2)
+    }
+
     const vel = this.physicsObject.linvel();
 
     if (this.keys[" "]) {

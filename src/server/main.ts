@@ -3,7 +3,7 @@
  Any updates here should probably be reflected in the singleplayer version.
 */
 
-import { serve } from "https://deno.land/std@0.159.0/http/mod.ts";
+import { serve } from "std/http/mod.ts";
 import { World } from "./world.ts";
 
 class Server {
@@ -70,7 +70,7 @@ server.world.addEventListener((type) => {
   });
 });
 
-function reqHandler(req: Request) {
+Deno.serve((req: Request) => {
   if (req.headers.get("upgrade") != "websocket") {
     return new Response(null, { status: 501 });
   }
@@ -212,6 +212,4 @@ function reqHandler(req: Request) {
   };
 
   return response;
-}
-
-serve(reqHandler, { port: 8000 });
+}, {port: 8000})
