@@ -171,7 +171,9 @@
     "gui": {
       "textures": [
         "logo",
-        "alphabet"
+        "alphabet",
+        "hotbar",
+        "hotbar_selected"
       ]
     }
   },

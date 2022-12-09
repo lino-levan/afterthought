@@ -50,6 +50,8 @@ export class Player {
     selected: 0,
   };
 
+  inventory: string[] = ["dirt", "leaves", "rock", "wood", "glass", "sand", "sandstone", "snow", "short_grass"]
+
   constructor(
     renderer: THREE.WebGLRenderer,
     canvas: HTMLCanvasElement,
@@ -223,9 +225,9 @@ export class Player {
     }
 
     // handle keyboard top row
-    for (let i = 0; i < 10; i++) {
+    for (let i = 1; i < 10; i++) {
       if (this.keys[i.toString()]) {
-        this.place.selected = i;
+        this.place.selected = i - 1;
       }
     }
 
@@ -606,7 +608,7 @@ export class Player {
           blockPos.x,
           blockPos.y,
           blockPos.z,
-          Object.keys(config.blocks)[this.place.selected],
+          this.inventory[this.place.selected],
         );
 
         this.place.timer = 10;
