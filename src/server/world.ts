@@ -1,9 +1,10 @@
+import {
+  getChunkFromPosition,
+  getChunkPosition,
+  getLocalPosition,
+} from "../constants.ts";
 import { Biomes } from "./biomes.ts";
 import { blockUpdate, randomBlockTick } from "./blocks.ts";
-
-function mod(n: number, m: number) {
-  return ((n % m) + m) % m;
-}
 
 export class World {
   // A world is made up of many 16x16x16 chunks
@@ -17,76 +18,45 @@ export class World {
     this.biomes = new Biomes(this.seed);
   }
 
-  generateTerrain(chunkX: number, chunkY: number, chunkZ: number) {
-    const chunkName = `${chunkX}|${chunkY}|${chunkZ}`;
-
+  generateTerrain(chunkName: string) {
     if (chunkName in this.chunks) return chunkName;
 
-    this.chunks[chunkName] = this.biomes.getChunk(chunkX, chunkY, chunkZ);
+    this.chunks[chunkName] = this.biomes.getChunk(chunkName);
 
     return chunkName;
   }
 
-  getChunkPosition(globalX: number, globalY: number, globalZ: number) {
-    const chunkX = Math.floor(globalX / 16);
-    const chunkY = Math.floor(globalY / 16);
-    const chunkZ = Math.floor(globalZ / 16);
+  removeBlock(x: number, y: number, z: number) {
+    const chunkName = getChunkFromPosition(x, y, z);
+    const [localX, localY, localZ] = getLocalPosition(x, y, z);
 
-    const x = mod(globalX, 16);
-    const y = mod(globalY, 16);
-    const z = mod(globalZ, 16);
+    this.generateTerrain(chunkName);
 
-    return {
-      chunkX,
-      chunkY,
-      chunkZ,
-      chunkName: `${chunkX}|${chunkY}|${chunkZ}`,
-      x,
-      y,
-      z,
-    };
-  }
+    this.chunks[chunkName][localX][localY][localZ] = "";
 
-  removeBlock(globalX: number, globalY: number, globalZ: number) {
-    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
-      globalX,
-      globalY,
-      globalZ,
-    );
-
-    const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ);
-
-    this.chunks[chunkName][x][y][z] = "";
-
-    this.doBlockUpdate(globalX, globalY, globalZ);
+    this.doBlockUpdate(x, y, z);
 
     return this.chunks[chunkName];
   }
 
-  getBlock(globalX: number, globalY: number, globalZ: number) {
-    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
-      globalX,
-      globalY,
-      globalZ,
-    );
+  getBlock(x: number, y: number, z: number) {
+    const chunkName = getChunkFromPosition(x, y, z);
+    const [localX, localY, localZ] = getLocalPosition(x, y, z);
 
-    const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ);
+    this.generateTerrain(chunkName);
 
-    return this.chunks[chunkName][x][y][z];
+    return this.chunks[chunkName][localX][localY][localZ];
   }
 
-  setBlock(globalX: number, globalY: number, globalZ: number, block: string) {
-    const { chunkX, chunkY, chunkZ, x, y, z } = this.getChunkPosition(
-      globalX,
-      globalY,
-      globalZ,
-    );
+  setBlock(x: number, y: number, z: number, block: string) {
+    const chunkName = getChunkFromPosition(x, y, z);
+    const [localX, localY, localZ] = getLocalPosition(x, y, z);
 
-    const chunkName = this.generateTerrain(chunkX, chunkY, chunkZ);
+    this.generateTerrain(chunkName);
 
-    this.chunks[chunkName][x][y][z] = block;
+    this.chunks[chunkName][localX][localY][localZ] = block;
 
-    this.doBlockUpdate(globalX, globalY, globalZ);
+    this.doBlockUpdate(x, y, z);
 
     return this.chunks[chunkName];
   }
@@ -95,7 +65,7 @@ export class World {
     let dirtyChunks: string[] = [];
 
     for (const chunkName of Object.keys(this.chunks)) {
-      const chunk = chunkName.split("|").map((n) => parseInt(n));
+      const chunk = getChunkPosition(chunkName);
 
       // this.generateTerrain(chunk[0] - 1, chunk[1], chunk[2]);
       // this.generateTerrain(chunk[0] + 1, chunk[1], chunk[2]);
@@ -130,33 +100,25 @@ export class World {
     return dirtyChunks;
   }
 
-  private doBlockUpdate(globalX: number, globalY: number, globalZ: number) {
+  private doBlockUpdate(x: number, y: number, z: number) {
     let dirtyChunks: string[] = [];
     const positions = [
-      [globalX, globalY, globalZ],
-      [globalX + 1, globalY, globalZ],
-      [globalX - 1, globalY, globalZ],
-      [globalX, globalY + 1, globalZ],
-      [globalX, globalY - 1, globalZ],
-      [globalX, globalY, globalZ + 1],
-      [globalX, globalY, globalZ - 1],
+      [x, y, z],
+      [x + 1, y, z],
+      [x - 1, y, z],
+      [x, y + 1, z],
+      [x, y - 1, z],
+      [x, y, z + 1],
+      [x, y, z - 1],
     ];
 
     for (const position of positions) {
-      const { chunkX, chunkY, chunkZ, chunkName, x, y, z } = this
-        .getChunkPosition(
-          position[0],
-          position[1],
-          position[2],
-        );
-
       dirtyChunks = [
         ...dirtyChunks,
-        ...blockUpdate(this.chunks[chunkName][x][y][z], [x, y, z], [
-          chunkX,
-          chunkY,
-          chunkZ,
-        ], this.chunks),
+        ...blockUpdate(
+          position,
+          this.chunks,
+        ),
       ];
     }
 

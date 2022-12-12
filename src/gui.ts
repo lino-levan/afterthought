@@ -8,7 +8,7 @@ import config from "./config.json";
 const guiScale = 8;
 
 export class Gui {
-  player: Player;
+  player?: Player;
   world: World;
   ctx: CanvasRenderingContext2D;
   screen = "title";
@@ -526,6 +526,8 @@ export class Gui {
           hotbar.height * guiScale / 2 + guiScale / 2,
         );
 
+        if(!this.player) break;
+
         for (let i = 0; i < 9; i++) {
           if (this.player.inventory[i]) {
             // TODO: Generalize this to any block model (?)
@@ -667,8 +669,8 @@ export class Gui {
         //       },
         //     },
         //   );
-          textbox.selected = true;
-        }
+        //   textbox.selected = true;
+        // }
         break;
       }
 

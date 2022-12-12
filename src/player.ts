@@ -21,12 +21,13 @@ export class Player {
     false,
     false,
   ];
-  cameraRotation = 0
+  cameraRotation = 0;
   settings = {
     speed: 5,
     jumpStength: 8,
     creative: false,
     sprint: false,
+    typing: false,
   };
   physicsObject: RigidBody;
   physics: Physics;
@@ -50,7 +51,17 @@ export class Player {
     selected: 0,
   };
 
-  inventory: string[] = ["dirt", "leaves", "rock", "wood", "glass", "sand", "sandstone", "snow", "short_grass"]
+  inventory: string[] = [
+    "dirt",
+    "leaves",
+    "rock",
+    "wood",
+    "glass",
+    "sand",
+    "sandstone",
+    "snow",
+    "short_grass",
+  ];
 
   constructor(
     renderer: THREE.WebGLRenderer,
@@ -79,14 +90,22 @@ export class Player {
 
     this.canvas.addEventListener("mousemove", (e) => {
       if (!e.movementX) return;
-      
-      const initialRotation = this.cameraRotation
-      let newRotation = this.cameraRotation + e.movementY * -0.0001 * settings.mouseSensitivity
-      newRotation = THREE.MathUtils.clamp(newRotation, -Math.PI / 2 + 0.01, Math.PI / 2 - 0.01)
 
-      this.cameraRotation = newRotation
+      const initialRotation = this.cameraRotation;
+      let newRotation = this.cameraRotation +
+        e.movementY * -0.0001 * settings.mouseSensitivity;
+      newRotation = THREE.MathUtils.clamp(
+        newRotation,
+        -Math.PI / 2 + 0.01,
+        Math.PI / 2 - 0.01,
+      );
 
-      this.camera.rotateOnWorldAxis(UP_AXIS, e.movementX * -0.0001 * settings.mouseSensitivity);
+      this.cameraRotation = newRotation;
+
+      this.camera.rotateOnWorldAxis(
+        UP_AXIS,
+        e.movementX * -0.0001 * settings.mouseSensitivity,
+      );
       this.camera.rotateX(newRotation - initialRotation);
     });
 
@@ -133,101 +152,112 @@ export class Player {
     sideVector.copy(forwardVector);
     sideVector.cross(UP_AXIS);
 
-    if (this.keys["w"]) {
-      velocity.x += this.settings.speed * forwardVector.x;
-      velocity.z += this.settings.speed * forwardVector.z;
-    }
-
-    if (this.keys["s"]) {
-      velocity.x -= this.settings.speed * forwardVector.x;
-      velocity.z -= this.settings.speed * forwardVector.z;
-    }
-
-    if (this.keys["a"]) {
-      velocity.x -= this.settings.speed * sideVector.x;
-      velocity.z -= this.settings.speed * sideVector.z;
-    }
-
-    if (this.keys["d"]) {
-      velocity.x += this.settings.speed * sideVector.x;
-      velocity.z += this.settings.speed * sideVector.z;
-    }
-
-    if([this.keys["w"], this.keys["s"], this.keys["a"], this.keys["d"]].filter(x => x).length === 2) {
-      velocity.x /= Math.sqrt(2)
-      velocity.z /= Math.sqrt(2)
-    }
-
     const vel = this.physicsObject.linvel();
 
-    if (this.keys[" "]) {
-      const playerPos = this.physicsObject.translation();
+    if (!this.settings.typing) {
+      if (this.keys["t"]) {
+        this.settings.typing = true;
+        this.keys["t"] = false;
+      }
 
-      const a = {
-        minX: playerPos.x - 0.3,
-        minY: playerPos.y - 0.9,
-        minZ: playerPos.z - 0.3,
-        maxX: playerPos.x + 0.3,
-        maxY: playerPos.y + 0.9,
-        maxZ: playerPos.z + 0.3,
-      };
+      if (this.keys["w"]) {
+        velocity.x += this.settings.speed * forwardVector.x;
+        velocity.z += this.settings.speed * forwardVector.z;
+      }
 
-      let blockPos = {
-        x: Math.floor(playerPos.x),
-        y: Math.floor(playerPos.y - 1),
-        z: Math.floor(playerPos.z),
-      };
+      if (this.keys["s"]) {
+        velocity.x -= this.settings.speed * forwardVector.x;
+        velocity.z -= this.settings.speed * forwardVector.z;
+      }
 
-      const blockType = await this.world.getBlock(
-        blockPos.x,
-        blockPos.y,
-        blockPos.z,
-      );
+      if (this.keys["a"]) {
+        velocity.x -= this.settings.speed * sideVector.x;
+        velocity.z -= this.settings.speed * sideVector.z;
+      }
+
+      if (this.keys["d"]) {
+        velocity.x += this.settings.speed * sideVector.x;
+        velocity.z += this.settings.speed * sideVector.z;
+      }
 
       if (
-        this.settings.creative ||
-        (
-          (
-            blockType !== "" && config.blocks[blockType].solid
-          ) &&
-          a.minX <= blockPos.x + 1 && a.maxX >= blockPos.x &&
-          a.minY <= blockPos.y + 1 && a.maxY >= blockPos.y &&
-          a.minZ <= blockPos.z + 1 && a.maxZ >= blockPos.z
-        )
+        [this.keys["w"], this.keys["s"], this.keys["a"], this.keys["d"]].filter(
+          (x) => x,
+        ).length === 2
       ) {
-        velocity.y = this.settings.jumpStength;
+        velocity.x /= Math.sqrt(2);
+        velocity.z /= Math.sqrt(2);
       }
-    }
 
-    if (this.keys["r"]) {
-      location.reload();
-    }
+      if (this.keys[" "]) {
+        const playerPos = this.physicsObject.translation();
 
-    if (this.keys["c"]) {
-      this.settings.creative = !this.settings.creative;
-      this.keys["c"] = false;
-    }
+        const a = {
+          minX: playerPos.x - 0.3,
+          minY: playerPos.y - 0.9,
+          minZ: playerPos.z - 0.3,
+          maxX: playerPos.x + 0.3,
+          maxY: playerPos.y + 0.9,
+          maxZ: playerPos.z + 0.3,
+        };
 
-    if (this.keys["Control"]) {
-      this.settings.sprint = !this.settings.sprint;
-      this.keys["Control"] = false;
+        let blockPos = {
+          x: Math.floor(playerPos.x),
+          y: Math.floor(playerPos.y - 1),
+          z: Math.floor(playerPos.z),
+        };
+
+        const blockType = await this.world.getBlock(
+          blockPos.x,
+          blockPos.y,
+          blockPos.z,
+        );
+
+        if (
+          this.settings.creative ||
+          (
+            (
+              blockType !== "" && config.blocks[blockType].solid
+            ) &&
+            a.minX <= blockPos.x + 1 && a.maxX >= blockPos.x &&
+            a.minY <= blockPos.y + 1 && a.maxY >= blockPos.y &&
+            a.minZ <= blockPos.z + 1 && a.maxZ >= blockPos.z
+          )
+        ) {
+          velocity.y = this.settings.jumpStength;
+        }
+      }
+
+      if (this.keys["r"]) {
+        location.reload();
+      }
+
+      if (this.keys["c"]) {
+        this.settings.creative = !this.settings.creative;
+        this.keys["c"] = false;
+      }
+
+      if (this.keys["Control"]) {
+        this.settings.sprint = !this.settings.sprint;
+        this.keys["Control"] = false;
+
+        if (this.settings.sprint) {
+          this.camera.fov += 15;
+        } else {
+          this.camera.fov -= 15;
+        }
+      }
 
       if (this.settings.sprint) {
-        this.camera.fov += 15;
-      } else {
-        this.camera.fov -= 15;
+        velocity.x *= 2;
+        velocity.z *= 2;
       }
-    }
 
-    if (this.settings.sprint) {
-      velocity.x *= 2;
-      velocity.z *= 2;
-    }
-
-    // handle keyboard top row
-    for (let i = 1; i < 10; i++) {
-      if (this.keys[i.toString()]) {
-        this.place.selected = i - 1;
+      // handle keyboard top row
+      for (let i = 1; i < 10; i++) {
+        if (this.keys[i.toString()]) {
+          this.place.selected = i - 1;
+        }
       }
     }
 
@@ -284,16 +314,23 @@ export class Player {
       blockType = await this.world.getBlock(blockPos.x, blockPos.y, blockPos.z);
 
       if (blockType) {
-        const blockPoints: number[] = Object.keys(config.models[config.blocks[blockType].model]).map((name)=>config.faces[name].positions).flat()
-        const {minX, maxX, minY, maxY, minZ, maxZ} = generateHitboxFromPoints(blockPoints)
+        const blockPoints: number[] = Object.keys(
+          config.models[config.blocks[blockType].model],
+        ).map((name) => config.faces[name].positions).flat();
+        const { minX, maxX, minY, maxY, minZ, maxZ } = generateHitboxFromPoints(
+          blockPoints,
+        );
 
         const p = {
           x: pos.x - blockPos.x,
           y: pos.y - blockPos.y,
-          z: pos.z - blockPos.z
-        }
+          z: pos.z - blockPos.z,
+        };
 
-        if(p.x > minX && p.x < maxX && p.y > minY && p.y < maxY && p.z > minZ && p.z < maxZ) {
+        if (
+          p.x > minX && p.x < maxX && p.y > minY && p.y < maxY && p.z > minZ &&
+          p.z < maxZ
+        ) {
           hit = true;
           break;
         }
@@ -318,9 +355,13 @@ export class Player {
     });
     const points: THREE.Vector3[] = [];
 
-    const blockPoints: number[] = Object.keys(config.models[config.blocks[blockType].model]).map((name)=>config.faces[name].positions).flat()
+    const blockPoints: number[] = Object.keys(
+      config.models[config.blocks[blockType].model],
+    ).map((name) => config.faces[name].positions).flat();
 
-    const {minX, maxX, minY, maxY, minZ, maxZ} = generateHitboxFromPoints(blockPoints)
+    const { minX, maxX, minY, maxY, minZ, maxZ } = generateHitboxFromPoints(
+      blockPoints,
+    );
 
     points.push(new THREE.Vector3(minX, minY, minZ));
     points.push(new THREE.Vector3(maxX, minY, minZ));
@@ -341,9 +382,9 @@ export class Player {
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
     const line = new THREE.Line(geometry, material);
-    line.translateX(blockPos.x)
-    line.translateY(blockPos.y)
-    line.translateZ(blockPos.z)
+    line.translateX(blockPos.x);
+    line.translateY(blockPos.y);
+    line.translateZ(blockPos.z);
     this.world.scene.add(line);
 
     this.break.blockOutline = line;
