@@ -526,7 +526,7 @@ export class Gui {
           hotbar.height * guiScale / 2 + guiScale / 2,
         );
 
-        if(!this.player) break;
+        if (!this.player) break;
 
         for (let i = 0; i < 9; i++) {
           if (this.player.inventory[i]) {

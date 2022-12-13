@@ -143,28 +143,46 @@ export function generateMesh(chunkName, chunks) {
           if (blockConfig.transparent) {
             if (
               face === "top" &&
-              getBlockFromChunks(x, y + 1, z, chunks) !== ""
-            ) continue;
+              (!isTransparent(x, y + 1, z, chunks) ||
+                getBlockFromChunks(x, y + 1, z, chunks) === block)
+            ) {
+              continue;
+            }
             if (
               face === "bottom" &&
-              getBlockFromChunks(x, y - 1, z, chunks) !== ""
-            ) continue;
+              (!isTransparent(x, y - 1, z, chunks) ||
+                getBlockFromChunks(x, y - 1, z, chunks) === block)
+            ) {
+              continue;
+            }
             if (
               face === "north" &&
-              getBlockFromChunks(x + 1, y, z, chunks) !== ""
-            ) continue;
+              (!isTransparent(x + 1, y, z, chunks) ||
+                getBlockFromChunks(x + 1, y, z, chunks) === block)
+            ) {
+              continue;
+            }
             if (
               face === "south" &&
-              getBlockFromChunks(x - 1, y, z, chunks) !== ""
-            ) continue;
+              (!isTransparent(x - 1, y, z, chunks) ||
+                getBlockFromChunks(x - 1, y, z, chunks) === block)
+            ) {
+              continue;
+            }
             if (
               face === "west" &&
-              getBlockFromChunks(x, y, z + 1, chunks) !== ""
-            ) continue;
+              (!isTransparent(x, y, z + 1, chunks) ||
+                getBlockFromChunks(x, y, z + 1, chunks) === block)
+            ) {
+              continue;
+            }
             if (
               face === "east" &&
-              getBlockFromChunks(x, y, z - 1, chunks) !== ""
-            ) continue;
+              (!isTransparent(x, y, z - 1, chunks) ||
+                getBlockFromChunks(x, y, z - 1, chunks) === block)
+            ) {
+              continue;
+            }
           } else {
             if (face === "top" && !isTransparent(x, y + 1, z, chunks)) {
               continue;

@@ -346,7 +346,9 @@ export class World {
     for (let x = -viewDistance; x < viewDistance; x++) {
       for (let y = -2; y < 2; y++) {
         for (let z = -viewDistance; z < viewDistance; z++) {
-          const chunkName = await this.generateTerrain(createChunkName(chunkPos[0]+x, chunkPos[1]+y, chunkPos[2]+z));
+          const chunkName = await this.generateTerrain(
+            createChunkName(chunkPos[0] + x, chunkPos[1] + y, chunkPos[2] + z),
+          );
 
           if (this.loadedChunkData.hasOwnProperty(chunkName)) continue;
 
