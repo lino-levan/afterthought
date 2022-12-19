@@ -1,3 +1,4 @@
+import { createChunkName, getChunkPosition } from "./constants";
 import { World } from "./server/world";
 
 export class Server {
@@ -82,18 +83,19 @@ export class Server {
     this.world.update();
   }
 
-  async buildMesh(chunkX: number, chunkY: number, chunkZ: number) {
+  async buildMesh(chunkName: string) {
+    const [chunkX, chunkY, chunkZ] = getChunkPosition(chunkName);
     const chunks: Record<string, string[][][]> = {};
 
     if (!this.ip) {
       const chunkNames = [
-        this.world.generateTerrain(chunkX, chunkY, chunkZ),
-        this.world.generateTerrain(chunkX + 1, chunkY, chunkZ),
-        this.world.generateTerrain(chunkX - 1, chunkY, chunkZ),
-        this.world.generateTerrain(chunkX, chunkY + 1, chunkZ),
-        this.world.generateTerrain(chunkX, chunkY - 1, chunkZ),
-        this.world.generateTerrain(chunkX, chunkY, chunkZ + 1),
-        this.world.generateTerrain(chunkX, chunkY, chunkZ - 1),
+        this.world.generateTerrain(chunkName),
+        this.world.generateTerrain(createChunkName(chunkX + 1, chunkY, chunkZ)),
+        this.world.generateTerrain(createChunkName(chunkX - 1, chunkY, chunkZ)),
+        this.world.generateTerrain(createChunkName(chunkX, chunkY + 1, chunkZ)),
+        this.world.generateTerrain(createChunkName(chunkX, chunkY - 1, chunkZ)),
+        this.world.generateTerrain(createChunkName(chunkX, chunkY, chunkZ + 1)),
+        this.world.generateTerrain(createChunkName(chunkX, chunkY, chunkZ - 1)),
       ];
 
       chunkNames.forEach((chunkName) => {
@@ -104,63 +106,59 @@ export class Server {
     } else {
       const { chunks } = await this.runCommand({
         command: "buildMesh",
-        chunkX,
-        chunkY,
-        chunkZ,
+        chunkName,
       });
 
       return chunks;
     }
   }
 
-  async breakBlock(globalX: number, globalY: number, globalZ: number) {
+  async breakBlock(x: number, y: number, z: number) {
     if (!this.ip) {
-      const chunk = this.world.removeBlock(globalX, globalY, globalZ);
+      const chunk = this.world.removeBlock(x, y, z);
 
       return chunk;
     } else {
       const { chunk } = await this.runCommand({
         command: "breakBlock",
-        globalX,
-        globalY,
-        globalZ,
+        x,
+        y,
+        z,
       });
       return chunk;
     }
   }
 
-  async getChunk(chunkX: number, chunkY: number, chunkZ: number) {
+  async getChunk(chunkName: string) {
     if (!this.ip) {
-      const chunkName = this.world.generateTerrain(chunkX, chunkY, chunkZ);
+      this.world.generateTerrain(chunkName);
 
       return this.world.chunks[chunkName];
     } else {
       const { chunk } = await this.runCommand({
         command: "getChunk",
-        chunkX,
-        chunkY,
-        chunkZ,
+        chunkName,
       });
       return chunk;
     }
   }
 
   async placeBlock(
-    globalX: number,
-    globalY: number,
-    globalZ: number,
+    x: number,
+    y: number,
+    z: number,
     block: string,
   ) {
     if (!this.ip) {
-      const chunk = this.world.setBlock(globalX, globalY, globalZ, block);
+      const chunk = this.world.setBlock(x, y, z, block);
 
       return chunk;
     } else {
       const { chunk } = await this.runCommand({
         command: "placeBlock",
-        globalX,
-        globalY,
-        globalZ,
+        x,
+        y,
+        z,
         block,
       });
       return chunk;

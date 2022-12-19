@@ -2,7 +2,7 @@
   "tasks": {
     "start": "deno run -A --unstable ./src/server/main.ts",
     "dev": "deno run -A --unstable --watch ./src/server/main.ts",
-    "build": "deno compile -A --unstable ./src/server/main.ts"
+    "build": "deno compile -A --unstable --importmap=import_map.json ./src/server/main.ts"
   },
   "lint": {
     "rules": {

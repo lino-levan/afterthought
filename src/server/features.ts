@@ -3,7 +3,7 @@ export function generateFeature(
   chunk: string[][][],
   basePosition: number[],
   config: any,
-  prng: ()=>number
+  prng: () => number,
 ) {
   switch (feature) {
     case "tree": {
@@ -20,25 +20,24 @@ export function generateFeature(
       chunk[pos[0]][pos[1] + 2][pos[2]] = "wood";
       chunk[pos[0]][pos[1] + 3][pos[2]] = "wood";
 
-
-      if(prng() < 0.5) chunk[pos[0] - 1][pos[1] + 2][pos[2]+1] = "leaves";
-      if(prng() < 0.5) chunk[pos[0] - 1][pos[1] + 2][pos[2]-1] = "leaves";
-      if(prng() < 0.5) chunk[pos[0] + 1][pos[1] + 2][pos[2]+1] = "leaves";
-      if(prng() < 0.5) chunk[pos[0] + 1][pos[1] + 2][pos[2]-1] = "leaves";
+      if (prng() < 0.5) chunk[pos[0] - 1][pos[1] + 2][pos[2] + 1] = "leaves";
+      if (prng() < 0.5) chunk[pos[0] - 1][pos[1] + 2][pos[2] - 1] = "leaves";
+      if (prng() < 0.5) chunk[pos[0] + 1][pos[1] + 2][pos[2] + 1] = "leaves";
+      if (prng() < 0.5) chunk[pos[0] + 1][pos[1] + 2][pos[2] - 1] = "leaves";
 
       chunk[pos[0] + 1][pos[1] + 2][pos[2]] = "leaves";
       chunk[pos[0] - 1][pos[1] + 2][pos[2]] = "leaves";
-      chunk[pos[0]][pos[1] + 2][pos[2]+1] = "leaves";
-      chunk[pos[0]][pos[1] + 2][pos[2]-1] = "leaves";
+      chunk[pos[0]][pos[1] + 2][pos[2] + 1] = "leaves";
+      chunk[pos[0]][pos[1] + 2][pos[2] - 1] = "leaves";
 
       chunk[pos[0] + 1][pos[1] + 3][pos[2]] = "leaves";
-      chunk[pos[0] + 1][pos[1] + 3][pos[2]+1] = "leaves";
-      chunk[pos[0] + 1][pos[1] + 3][pos[2]-1] = "leaves";
+      chunk[pos[0] + 1][pos[1] + 3][pos[2] + 1] = "leaves";
+      chunk[pos[0] + 1][pos[1] + 3][pos[2] - 1] = "leaves";
       chunk[pos[0] - 1][pos[1] + 3][pos[2]] = "leaves";
-      chunk[pos[0] - 1][pos[1] + 3][pos[2]+1] = "leaves";
-      chunk[pos[0] - 1][pos[1] + 3][pos[2]-1] = "leaves";
-      chunk[pos[0]][pos[1] + 3][pos[2]+1] = "leaves";
-      chunk[pos[0]][pos[1] + 3][pos[2]-1] = "leaves";
+      chunk[pos[0] - 1][pos[1] + 3][pos[2] + 1] = "leaves";
+      chunk[pos[0] - 1][pos[1] + 3][pos[2] - 1] = "leaves";
+      chunk[pos[0]][pos[1] + 3][pos[2] + 1] = "leaves";
+      chunk[pos[0]][pos[1] + 3][pos[2] - 1] = "leaves";
 
       chunk[pos[0] + 1][pos[1] + 4][pos[2]] = "leaves";
       chunk[pos[0] - 1][pos[1] + 4][pos[2]] = "leaves";

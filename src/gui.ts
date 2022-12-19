@@ -3,11 +3,12 @@ import { Player } from "./player";
 import { textures } from "./textures";
 import { setServer } from "./server";
 import settings from "./settings";
+import config from "./config.json";
 
 const guiScale = 8;
 
 export class Gui {
-  player: Player;
+  player?: Player;
   world: World;
   ctx: CanvasRenderingContext2D;
   screen = "title";
@@ -288,8 +289,10 @@ export class Gui {
           canvas.height / 2,
           20,
           guiScale / 2,
-          (text) => {
-            joinMultiplayer(text);
+          {
+            callback: (text) => {
+              joinMultiplayer(text);
+            },
           },
         );
 
@@ -347,8 +350,6 @@ export class Gui {
           canvas.height / 2 - 120,
           20,
           guiScale / 2,
-          (text) => {
-          },
         );
 
         this.drawText(
@@ -367,8 +368,6 @@ export class Gui {
           canvas.height / 2,
           20,
           guiScale / 2,
-          (text) => {
-          },
         );
 
         this.drawButton(
@@ -510,12 +509,167 @@ export class Gui {
         ctx.fillRect(canvas.width / 2 - 1, canvas.height / 2 - 10, 2, 20);
         ctx.fillRect(canvas.width / 2 - 10, canvas.height / 2 - 1, 20, 2);
 
-        this.drawText("Afterthought v0.1.3", 5, 5, guiScale / 4);
+        this.drawText("Afterthought v0.1.4", 5, 5, guiScale / 4);
 
-        // TODO: Hotbar
-        // for(let i = 0; i < 9; i++) {
-        //   ctx.strokeStyle = "#aaaaaa"
-        //   ctx.strokeRect(canvas.width/2 - (9/2 * 70) + (i * 70), canvas.height - 90, 70, 70)
+        // draw hotbar
+        const hotbar_selected = textures["gui"].images["hotbar_selected"].image;
+        const hotbar = textures["gui"].images["hotbar"].image;
+
+        ctx.strokeStyle = "#2e222f";
+        ctx.lineWidth = guiScale / 2;
+        ctx.strokeRect(
+          canvas.width / 2 - (9 / 2 * hotbar.width * guiScale / 2) -
+            guiScale / 4,
+          canvas.height - (hotbar_selected.height * guiScale / 2) -
+            guiScale / 2 - guiScale / 4,
+          9 * hotbar.width * guiScale / 2 + guiScale / 2,
+          hotbar.height * guiScale / 2 + guiScale / 2,
+        );
+
+        if (!this.player) break;
+
+        for (let i = 0; i < 9; i++) {
+          if (this.player.inventory[i]) {
+            // TODO: Generalize this to any block model (?)
+            const block_config: { textures: string[]; model: string } =
+              config.blocks[this.player.inventory[i]];
+            if (
+              block_config.model === "all" || block_config.model === "block"
+            ) {
+              const top_name = block_config.model === "all"
+                ? block_config.textures[0]
+                : block_config.textures[0];
+              const north_name = block_config.model === "all"
+                ? block_config.textures[0]
+                : block_config.textures[4];
+              const west_name = block_config.model === "all"
+                ? block_config.textures[0]
+                : block_config.textures[2];
+              const top_image = textures["blocks"].images[top_name].image;
+              const north_image = textures["blocks"].images[north_name].image;
+              const west_image = textures["blocks"].images[west_name].image;
+
+              const size = guiScale / 2 * 7.25;
+              const diff = guiScale / 3;
+              const skew = 0.6;
+              // north side
+              ctx.save();
+              ctx.translate(
+                diff + canvas.width / 2 -
+                  (9 / 2 * hotbar.width * guiScale / 2) +
+                  (i * hotbar.width * guiScale / 2) + guiScale / 2 +
+                  guiScale / 2 + guiScale / 2,
+                canvas.height - (hotbar_selected.height * guiScale / 2) +
+                  guiScale / 2 + guiScale / 2 + size * skew,
+              );
+              ctx.transform(1, skew, 0, 1, 0, 0);
+              ctx.drawImage(north_image, 0, 0, size, size);
+              ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+              ctx.fillRect(0, 0, size, size);
+              ctx.restore();
+
+              // west side
+              ctx.save();
+              ctx.translate(
+                diff + canvas.width / 2 -
+                  (9 / 2 * hotbar.width * guiScale / 2) +
+                  (i * hotbar.width * guiScale / 2) + guiScale / 2 +
+                  guiScale / 2 + guiScale / 2 + size,
+                canvas.height - (hotbar_selected.height * guiScale / 2) +
+                  guiScale / 2 + guiScale / 2 + size * (skew * 2),
+              );
+              ctx.transform(1, -skew, 0, 1, 0, 0);
+              ctx.drawImage(west_image, 0, 0, size, size);
+              ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+              ctx.fillRect(0, 0, size, size);
+              ctx.restore();
+
+              // top side
+              ctx.save();
+              ctx.translate(
+                diff + canvas.width / 2 -
+                  (9 / 2 * hotbar.width * guiScale / 2) +
+                  (i * hotbar.width * guiScale / 2) + guiScale / 2 +
+                  guiScale / 2 + guiScale / 2,
+                (canvas.height - (hotbar_selected.height * guiScale / 2) +
+                  guiScale / 2 + guiScale / 2 + size * skew) + 1,
+              );
+              ctx.transform(1, -skew, 1, skew, 0, 0);
+              ctx.drawImage(top_image, 0, 0, size, size);
+              ctx.restore();
+            } else {
+              const texture_name = block_config.textures[0];
+              const block_image = textures["blocks"].images[texture_name].image;
+              ctx.drawImage(
+                block_image,
+                canvas.width / 2 - (9 / 2 * hotbar.width * guiScale / 2) +
+                  (i * hotbar.width * guiScale / 2) + guiScale / 2 +
+                  guiScale / 2 + guiScale / 2,
+                canvas.height - (hotbar_selected.height * guiScale / 2) +
+                  guiScale / 2 + guiScale / 2,
+                block_image.width * guiScale / 2,
+                block_image.height * guiScale / 2,
+              );
+            }
+          }
+          if (this.player.place.selected === i) continue;
+          ctx.drawImage(
+            hotbar,
+            canvas.width / 2 - (9 / 2 * hotbar.width * guiScale / 2) +
+              (i * hotbar.width * guiScale / 2),
+            canvas.height - (hotbar_selected.height * guiScale / 2) -
+              guiScale / 2,
+            hotbar.width * guiScale / 2,
+            hotbar.height * guiScale / 2,
+          );
+        }
+        for (let i = 0; i < 9; i++) {
+          if (this.player.place.selected !== i) continue;
+          ctx.strokeRect(
+            canvas.width / 2 - (9 / 2 * hotbar.width * guiScale / 2) +
+              (i * hotbar.width * guiScale / 2) - guiScale / 2 - guiScale / 4,
+            canvas.height - (hotbar_selected.height * guiScale / 2) -
+              guiScale / 2 - guiScale / 2 - guiScale / 4,
+            hotbar_selected.width * guiScale / 2 + guiScale / 2,
+            hotbar_selected.height * guiScale / 2 + guiScale / 2,
+          );
+          ctx.drawImage(
+            hotbar_selected,
+            canvas.width / 2 - (9 / 2 * hotbar.width * guiScale / 2) +
+              (i * hotbar.width * guiScale / 2) - guiScale / 2,
+            canvas.height - (hotbar_selected.height * guiScale / 2) -
+              guiScale / 2 - guiScale / 2,
+            hotbar_selected.width * guiScale / 2,
+            hotbar_selected.height * guiScale / 2,
+          );
+        }
+
+        // if (this.player.settings.typing) {
+        //   ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+        //   ctx.fillRect(
+        //     0,
+        //     canvas.height - (hotbar_selected.height * guiScale / 2) -
+        //       guiScale * 9,
+        //     guiScale * 60,
+        //     guiScale * 6,
+        //   );
+        //   const textbox = this.drawTextbox(
+        //     "CHAT_BOX",
+        //     guiScale * 30,
+        //     canvas.height - (hotbar_selected.height * guiScale / 2) -
+        //       guiScale * 8,
+        //     20,
+        //     guiScale / 2,
+        //     {
+        //       hideBackground: true,
+        //       callback: (text, textbox) => {
+        //         alert(text);
+        //         this.player.settings.typing = false;
+        //         textbox.text = "";
+        //       },
+        //     },
+        //   );
+        //   textbox.selected = true;
         // }
         break;
       }
@@ -680,7 +834,16 @@ export class Gui {
     y: number,
     width: number,
     scale: number,
-    callback: (text: string) => void,
+    options?: {
+      callback?: (text: string, textbox: {
+        text: string;
+        selected: boolean;
+        cursorPosition: number;
+        blinkTimer: number;
+        show: boolean;
+      }) => void;
+      hideBackground?: boolean;
+    },
   ): {
     text: string;
     selected: boolean;
@@ -720,20 +883,22 @@ export class Gui {
       }
     }
 
-    ctx.fillStyle = this.data[id].selected ? "#ffffff" : "#dddddd";
-    ctx.fillRect(
-      x - (width * 6 * scale + scale + (scale * 4)) / 2,
-      y - (scale * 2),
-      width * 6 * scale - scale + (scale * 4),
-      scale * 12,
-    );
-    ctx.fillStyle = "black";
-    ctx.fillRect(
-      x - (width * 6 * scale + scale + (scale * 2)) / 2,
-      y - scale,
-      width * 6 * scale - scale + (scale * 2),
-      scale * 10,
-    );
+    if (!options?.hideBackground) {
+      ctx.fillStyle = this.data[id].selected ? "#ffffff" : "#dddddd";
+      ctx.fillRect(
+        x - (width * 6 * scale + scale + (scale * 4)) / 2,
+        y - (scale * 2),
+        width * 6 * scale - scale + (scale * 4),
+        scale * 12,
+      );
+      ctx.fillStyle = "black";
+      ctx.fillRect(
+        x - (width * 6 * scale + scale + (scale * 2)) / 2,
+        y - scale,
+        width * 6 * scale - scale + (scale * 2),
+        scale * 10,
+      );
+    }
 
     if (this.data[id].selected) {
       let pressedKeys = Object.entries(this.keys).filter((v) => v[1]).map((v) =>
@@ -743,7 +908,11 @@ export class Gui {
       pressedKeys.forEach((key) => {
         this.keys[key] = false;
 
-        if (key === "Enter") return callback(this.data[id].text);
+        if (key === "Enter") {
+          return options?.callback
+            ? options.callback(this.data[id].text, this.data[id])
+            : undefined;
+        }
         if (key === "Escape") {
           this.data[id].selected = false;
           return;
