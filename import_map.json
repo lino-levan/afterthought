@@ -1,7 +1,0 @@
-{
-  "imports": {
-    "alea": "https://esm.sh/alea@1.0.1",
-    "simplex-noise": "https://esm.sh/simplex-noise@4.0.1",
-    "std/": "https://deno.land/std@0.167.0/"
-  }
-}
