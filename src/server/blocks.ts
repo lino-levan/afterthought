@@ -1,47 +1,45 @@
-import { getBlockFromChunk } from "./utils.ts";
+import {
+  getBlockFromChunks,
+  getChunkFromPosition,
+  getLocalPosition,
+} from "../constants.ts";
 
 /**
- * Returns list of "dirty" chunks. Regenerate chunk meshes if dirty.
- * @param block block type
- * @param pos position [x, y, z]
- * @param chunk position [x, y, z]
- * @param chunks world chunks
- * @returns boolean if dirty
+ * Returns list of "dirty" chunks given global coordinates. Regenerate chunk meshes if dirty.
  */
 export function randomBlockTick(
-  block: string,
-  pos: number[],
-  chunk: number[],
+  x: number,
+  y: number,
+  z: number,
   chunks: Record<string, string[][][]>,
 ): string[] {
-  const chunkName = `${chunk[0]}|${chunk[1]}|${chunk[2]}`;
+  const chunkName = getChunkFromPosition(x, y, z);
+  const block = getBlockFromChunks(x, y, z, chunks);
 
   switch (block) {
     case "dirt": {
       if (Math.random() > 0.01) break;
-      if (
-        getBlockFromChunk(chunkName, pos[0], pos[1] + 1, pos[2], chunks) !== ""
-      ) {
+      if (getBlockFromChunks(x, y, z, chunks) !== "") {
         break;
       }
 
       const blocks = [
-        getBlockFromChunk(chunkName, pos[0] - 1, pos[1], pos[2], chunks),
-        getBlockFromChunk(chunkName, pos[0] + 1, pos[1], pos[2], chunks),
-        getBlockFromChunk(chunkName, pos[0], pos[1], pos[2] - 1, chunks),
-        getBlockFromChunk(chunkName, pos[0], pos[1], pos[2] + 1, chunks),
-        getBlockFromChunk(chunkName, pos[0] - 1, pos[1] - 1, pos[2], chunks),
-        getBlockFromChunk(chunkName, pos[0] + 1, pos[1] - 1, pos[2], chunks),
-        getBlockFromChunk(chunkName, pos[0], pos[1] - 1, pos[2] - 1, chunks),
-        getBlockFromChunk(chunkName, pos[0], pos[1] - 1, pos[2] + 1, chunks),
-        getBlockFromChunk(chunkName, pos[0] - 1, pos[1] + 1, pos[2], chunks),
-        getBlockFromChunk(chunkName, pos[0] + 1, pos[1] + 1, pos[2], chunks),
-        getBlockFromChunk(chunkName, pos[0], pos[1] + 1, pos[2] - 1, chunks),
-        getBlockFromChunk(chunkName, pos[0], pos[1] + 1, pos[2] + 1, chunks),
+        getBlockFromChunks(x - 1, y, z, chunks),
+        getBlockFromChunks(x + 1, y, z, chunks),
+        getBlockFromChunks(x, y, z - 1, chunks),
+        getBlockFromChunks(x, y, z + 1, chunks),
+        getBlockFromChunks(x - 1, y - 1, z, chunks),
+        getBlockFromChunks(x + 1, y - 1, z, chunks),
+        getBlockFromChunks(x, y - 1, z - 1, chunks),
+        getBlockFromChunks(x, y - 1, z + 1, chunks),
+        getBlockFromChunks(x - 1, y + 1, z, chunks),
+        getBlockFromChunks(x + 1, y + 1, z, chunks),
+        getBlockFromChunks(x, y + 1, z - 1, chunks),
+        getBlockFromChunks(x, y + 1, z + 1, chunks),
       ];
 
       if (blocks.indexOf("grass") !== -1) {
-        chunks[chunkName][pos[0]][pos[1]][pos[2]] = "grass";
+        chunks[chunkName][x][y][z] = "grass";
         return [chunkName];
       }
 
@@ -49,9 +47,9 @@ export function randomBlockTick(
     }
     case "grass": {
       if (
-        getBlockFromChunk(chunkName, pos[0], pos[1] + 1, pos[2], chunks) !== ""
+        getBlockFromChunks(x, y + 1, z, chunks) !== ""
       ) {
-        chunks[chunkName][pos[0]][pos[1]][pos[2]] = "dirt";
+        chunks[chunkName][x][y][z] = "dirt";
         return [chunkName];
       }
 
@@ -62,33 +60,36 @@ export function randomBlockTick(
 }
 
 export function blockUpdate(
-  block: string,
-  pos: number[],
-  chunk: number[],
+  [x, y, z]: number[],
   chunks: Record<string, string[][][]>,
 ) {
-  const chunkName = `${chunk[0]}|${chunk[1]}|${chunk[2]}`;
+  let modifiedChunks: string[] = [];
+  const chunkName = getChunkFromPosition(x, y, z);
+  const [localX, localY, localZ] = getLocalPosition(x, y, z);
+  const block = chunks[chunkName][localX][localY][localZ];
 
   switch (block) {
     case "short_grass": {
       if (
-        getBlockFromChunk(chunkName, pos[0], pos[1] - 1, pos[2], chunks) === ""
+        getBlockFromChunks(x, y - 1, z, chunks) === ""
       ) {
-        chunks[chunkName][pos[0]][pos[1]][pos[2]] = "";
-        return [chunkName];
+        chunks[chunkName][localX][localY][localZ] = "";
+        modifiedChunks = [
+          chunkName,
+        ];
       }
-      break
+      break;
     }
 
     case "short_cactus": {
       if (
-        getBlockFromChunk(chunkName, pos[0], pos[1] - 1, pos[2], chunks) === ""
+        getBlockFromChunks(x, y - 1, z, chunks) === ""
       ) {
-        chunks[chunkName][pos[0]][pos[1]][pos[2]] = "";
-        return [chunkName];
+        chunks[chunkName][localX][localY][localZ] = "";
+        modifiedChunks = [chunkName];
       }
-      break
+      break;
     }
   }
-  return [];
+  return modifiedChunks;
 }

@@ -3,7 +3,11 @@
  Any updates here should probably be reflected in the singleplayer version.
 */
 
-import { serve } from "https://deno.land/std@0.159.0/http/mod.ts";
+import {
+  createChunkName,
+  getChunkFromPosition,
+  getChunkPosition,
+} from "../constants.ts";
 import { World } from "./world.ts";
 
 class Server {
@@ -19,17 +23,18 @@ class Server {
     this.world.update();
   }
 
-  buildMesh(chunkX: number, chunkY: number, chunkZ: number) {
+  buildMesh(chunkName: string) {
+    const [chunkX, chunkY, chunkZ] = getChunkPosition(chunkName);
     const chunks: Record<string, string[][][]> = {};
 
     const chunkNames = [
-      this.world.generateTerrain(chunkX, chunkY, chunkZ),
-      this.world.generateTerrain(chunkX + 1, chunkY, chunkZ),
-      this.world.generateTerrain(chunkX - 1, chunkY, chunkZ),
-      this.world.generateTerrain(chunkX, chunkY + 1, chunkZ),
-      this.world.generateTerrain(chunkX, chunkY - 1, chunkZ),
-      this.world.generateTerrain(chunkX, chunkY, chunkZ + 1),
-      this.world.generateTerrain(chunkX, chunkY, chunkZ - 1),
+      this.world.generateTerrain(chunkName),
+      this.world.generateTerrain(createChunkName(chunkX + 1, chunkY, chunkZ)),
+      this.world.generateTerrain(createChunkName(chunkX - 1, chunkY, chunkZ)),
+      this.world.generateTerrain(createChunkName(chunkX, chunkY + 1, chunkZ)),
+      this.world.generateTerrain(createChunkName(chunkX, chunkY - 1, chunkZ)),
+      this.world.generateTerrain(createChunkName(chunkX, chunkY, chunkZ + 1)),
+      this.world.generateTerrain(createChunkName(chunkX, chunkY, chunkZ - 1)),
     ];
 
     chunkNames.forEach((chunkName: string) => {
@@ -39,20 +44,20 @@ class Server {
     return chunks;
   }
 
-  breakBlock(globalX: number, globalY: number, globalZ: number) {
-    const chunk = this.world.removeBlock(globalX, globalY, globalZ);
+  breakBlock(x: number, y: number, z: number) {
+    const chunk = this.world.removeBlock(x, y, z);
 
     return chunk;
   }
 
-  getChunk(chunkX: number, chunkY: number, chunkZ: number) {
-    const chunkName = this.world.generateTerrain(chunkX, chunkY, chunkZ);
+  getChunk(chunkName: string) {
+    this.world.generateTerrain(chunkName);
 
     return this.world.chunks[chunkName];
   }
 
-  placeBlock(globalX: number, globalY: number, globalZ: number, block: string) {
-    const chunk = this.world.setBlock(globalX, globalY, globalZ, block);
+  placeBlock(x: number, y: number, z: number, block: string) {
+    const chunk = this.world.setBlock(x, y, z, block);
 
     return chunk;
   }
@@ -70,7 +75,7 @@ server.world.addEventListener((type) => {
   });
 });
 
-function reqHandler(req: Request) {
+Deno.serve((req: Request) => {
   if (req.headers.get("upgrade") != "websocket") {
     return new Response(null, { status: 501 });
   }
@@ -105,16 +110,14 @@ function reqHandler(req: Request) {
 
       switch (command) {
         case "buildMesh": {
-          const { chunkX, chunkY, chunkZ } = JSON.parse(e.data);
+          const { chunkName } = JSON.parse(e.data);
 
-          const chunks = await server.buildMesh(chunkX, chunkY, chunkZ);
+          const chunks = await server.buildMesh(chunkName);
 
           ws.send(JSON.stringify({
             command: "buildMesh",
             packetId,
-            chunkX,
-            chunkY,
-            chunkZ,
+            chunkName,
             chunks,
           }));
 
@@ -122,9 +125,9 @@ function reqHandler(req: Request) {
         }
 
         case "getChunk": {
-          const { chunkX, chunkY, chunkZ } = JSON.parse(e.data);
+          const { chunkName } = JSON.parse(e.data);
 
-          const chunk = await server.getChunk(chunkX, chunkY, chunkZ);
+          const chunk = await server.getChunk(chunkName);
 
           ws.send(JSON.stringify({
             command: "getChunk",
@@ -136,21 +139,16 @@ function reqHandler(req: Request) {
         }
 
         case "breakBlock": {
-          const { globalX, globalY, globalZ } = JSON.parse(e.data);
+          const { x, y, z } = JSON.parse(e.data);
+          const chunkName = getChunkFromPosition(x, y, z);
 
-          const chunk = await server.breakBlock(globalX, globalY, globalZ);
+          const chunk = await server.breakBlock(x, y, z);
 
           ws.send(JSON.stringify({
             command: "breakBlock",
             packetId,
             chunk,
           }));
-
-          const { chunkName } = server.world.getChunkPosition(
-            globalX,
-            globalY,
-            globalZ,
-          );
 
           connections.forEach((ws) => {
             if (ws.readyState !== ws.OPEN) return;
@@ -159,21 +157,19 @@ function reqHandler(req: Request) {
               command: "setChunk",
               chunk,
               chunkName,
-              x: globalX,
-              y: globalY,
-              z: globalZ,
             }));
           });
           return;
         }
 
         case "placeBlock": {
-          const { globalX, globalY, globalZ, block } = JSON.parse(e.data);
+          const { x, y, z, block } = JSON.parse(e.data);
+          const chunkName = getChunkFromPosition(x, y, z);
 
           const chunk = await server.placeBlock(
-            globalX,
-            globalY,
-            globalZ,
+            x,
+            y,
+            z,
             block,
           );
 
@@ -183,20 +179,11 @@ function reqHandler(req: Request) {
             chunk,
           }));
 
-          const { chunkName } = server.world.getChunkPosition(
-            globalX,
-            globalY,
-            globalZ,
-          );
-
           connections.forEach((ws) => {
             ws.send(JSON.stringify({
               command: "setChunk",
               chunk,
               chunkName,
-              x: globalX,
-              y: globalY,
-              z: globalZ,
             }));
           });
           return;
@@ -212,6 +199,4 @@ function reqHandler(req: Request) {
   };
 
   return response;
-}
-
-serve(reqHandler, { port: 8000 });
+}, { port: 8000 });

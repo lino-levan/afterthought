@@ -1,6 +1,7 @@
 import { createNoise2D, createNoise3D, NoiseFunction2D } from "simplex-noise";
 import Alea from "alea";
 import { generateFeature } from "./features.ts";
+import { getChunkPosition } from "../constants.ts";
 
 function map(
   x: number,
@@ -117,7 +118,8 @@ export class Biomes {
 
   getHeight(x: number, z: number, biome: string, noise2D: NoiseFunction2D) {
     let val =
-      (noise2D(x / biomes[biome].smoothness, z / biomes[biome].smoothness) ** biomes[biome].jaggedness) *
+      (noise2D(x / biomes[biome].smoothness, z / biomes[biome].smoothness) **
+        biomes[biome].jaggedness) *
       biomes[biome].height * 1 / 2;
     val += (noise2D(
       x / (biomes[biome].smoothness / 2),
@@ -136,8 +138,9 @@ export class Biomes {
     return val;
   }
 
-  getChunk(chunkX: number, chunkY: number, chunkZ: number) {
-    const prngByChunk = Alea(`${this.seed}|${chunkX}|${chunkY}|${chunkZ}`);
+  getChunk(chunkName: string) {
+    const [chunkX, chunkY, chunkZ] = getChunkPosition(chunkName);
+    const prngByChunk = Alea(`${this.seed}|${chunkName}`);
     const prng = Alea(this.seed);
     const noise2D = createNoise2D(prng);
     const noise3D = createNoise3D(prng);
